@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.6.1](https://github.com/dev-murphy/yaadchess/compare/v0.6.0...v0.6.1) (2026-11-14)
+
+### Code Refactors
+
+* update app name to just chess ([db61361](https://github.com/dev-murphy/yaadchess/commit/db613617a7716e87edb579940a25baa795c3ba8d))
+
+## [0.6.0](https://github.com/dev-murphy/yaadchess/releases/tag/v0.6.0) (2026-11-13)
+
+### Features
+
+* add basic drag function to piece component ([30be0e3](https://github.com/dev-murphy/yaadchess/commit/30be0e3db983e995b8c4edcebc444e33a90a95ac))
+* implement function to place pieces on the board based on FEN notation ([2da0333](https://github.com/dev-murphy/yaadchess/commit/2da0333194e0dc9e2678440b315a5fb014757289))
+
+### Code Refactors
+
+* made chess board a fixed width and height ([24a0fde](https://github.com/dev-murphy/yaadchess/commit/24a0fdea3d938153995cdd4a14412a734e80cd78))
+* update piece types to use FEN notation ([f4ca17d](https://github.com/dev-murphy/yaadchess/commit/f4ca17df23c6dc1d6e9753f8f8f25a6705a7dca1))
+
+### Documentation
+
+* update README to include scripts folder ([86666e3](https://github.com/dev-murphy/yaadchess/commit/86666e3912fcce7367b280d069b94e8db9d58488))
+* add MIT license ([193e4cb](https://github.com/dev-murphy/yaadchess/commit/193e4cbbf6290bf766aedf3ab2162acb2e8f03b6))
+
+### Miscellaneous
+
+* prevent window from resizing and add comments ([40d61aa](https://github.com/dev-murphy/yaadchess/commit/40d61aac41757d05cba06bf9caa9b51c3d178c65))
+
+
 ## [0.6.0](https://github.com/dev-murphy/yaadchess/compare/v0.5.0...v0.6.0) (2026-11-13)
 
 ### Features
