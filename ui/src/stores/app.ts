@@ -3,7 +3,7 @@ import { type SquareInfo, PieceMap, PieceColor, type Piece, type PieceLetter } f
 
 export const useAppStore = defineStore("app", {
   state: () => ({
-    name: "Yaad Chess",
+    name: "Chess",
     lightColor: "#EBECD0",
     darkColor: "#779556",
     board: Array.from({ length: 8 }, () =>
