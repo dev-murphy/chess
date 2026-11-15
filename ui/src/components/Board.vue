@@ -1,7 +1,34 @@
 <script lang="ts" setup>
-import { PieceTheme } from "~/types";
+import { PieceTheme, type Piece, type Coords } from "~/types";
 
 const appStore = useAppStore();
+
+// Dragging controls for pieces
+const isDragging = ref<Piece|null>(null);
+
+// Board information
+const boardRef = useTemplateRef('boardRef')
+const { top, left } = useElementBounding(boardRef);
+
+function handleDrop(pos: Coords) {
+  const { r, c } =  getCoordsFromPosition(pos);
+  let row = appStore.selectedSquare[0];
+  let col = appStore.selectedSquare[1];
+  
+  if (row == undefined || col === undefined) return;
+  if (r < 0 || r > 7 || c < 0 || c > 7 ) return;
+  if (r === row - 1 && c === col - 1) return;
+  
+  appStore.board[r][c].piece = appStore.board[row-1][col-1].piece;
+  appStore.board[row-1][col-1].piece = null;
+  appStore.selectedSquare = [];
+}
+
+function getCoordsFromPosition(pos: Coords) {
+  let x = Math.floor((pos.x - left.value) / 72);
+  let y = Math.floor((pos.y - top.value) / 72);
+  return { r: y, c: x };
+}
 
 // get opposite color based current square
 function getTextColor(row: number, col: number) {
@@ -16,13 +43,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+<div>
+  <div ref="boardRef">
     <div v-for="row in appStore.board.length" :key="`row-${row}`" class="flex">
       <div
         v-for="col in appStore.board.length"
         :key="`col-${col}`"
         :class="[
-          'relative w-18 aspect-square',
+          'relative w-18 h-18',
           {
             selected:
               appStore.selectedSquare[0] == row &&
@@ -51,11 +79,18 @@ onMounted(() => {
           v-if="appStore.board[row - 1][col - 1].piece !== null"
           :piece="appStore.board[row - 1][col - 1].piece"
           :theme="PieceTheme.THEME_1"
+          :is-dragging="isDragging"
           @mousedown="appStore.selectPiece(row, col)"
+          @update:is-dragging="(val) => { isDragging = val }"
+          @handle-drop="handleDrop"
         />
       </div>
     </div>
   </div>
+
+  <!-- Audio for piece move and capture -->
+  <audio />
+</div>
 </template>
 
 <style scoped>

@@ -1,25 +1,36 @@
 <script lang="ts" setup>
 import { getPieceImage } from "~/utils";
-import { PieceTheme, type Piece } from "~/types";
+import { PieceTheme, type Piece, type Coords} from "~/types";
 
-withDefaults(defineProps<{ piece: Piece; theme?: PieceTheme }>(), {
-  theme: PieceTheme.THEME_1,
-});
+const props = withDefaults(
+  defineProps<{ piece: Piece; theme?: PieceTheme; isDragging: Piece | null }>(),
+  {
+    theme: PieceTheme.THEME_1,
+  },
+);
 
-const isDragging = ref(false);
+const emits = defineEmits<{
+  (e: "update:isDragging", val: Piece | null): void;
+  (e: "handle-drop", pos: Coords): void;
+}>();
+
 const pieceImg = useTemplateRef("pieceImg");
 const { top, left } = useElementBounding(pieceImg);
 const { x, y } = useDraggable(pieceImg, {
   initialValue: { y: top.value, x: left.value },
   onStart() {
     if (!pieceImg.value) return;
-    isDragging.value = true;
+    emits("update:isDragging", props.piece);
     y.value = top.value;
     x.value = left.value;
     pieceImg.value.style.zIndex = "100";
   },
-  onEnd() {
-    isDragging.value = false;
+  onEnd(_, event) {
+    emits("update:isDragging", null);
+    emits("handle-drop", {
+      x: event.clientX,
+      y: event.clientY
+    })
   },
 });
 </script>
@@ -41,14 +52,14 @@ const { x, y } = useDraggable(pieceImg, {
       :src="getPieceImage(piece, theme)"
       :alt="`${piece.color} ${piece.type}`"
       :class="[
-        'select-none touch-none',
+        'relative select-none touch-none',
         {
           'w-16': theme === PieceTheme.THEME_1,
           'w-18': theme === PieceTheme.THEME_2,
         },
       ]"
       :style="
-        isDragging
+        isDragging === piece
           ? { position: 'fixed', top: `${y}px`, left: `${x}px`, zIndex: '100' }
           : {}
       "

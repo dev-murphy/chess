@@ -29,3 +29,8 @@ export type Piece = {
   color: PieceColor;
   type: PieceType;
 }
+
+export type Coords = {
+  x: number;
+  y: number;
+}
