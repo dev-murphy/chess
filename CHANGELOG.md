@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.7.0](https://github.com/dev-murphy/yaadchess/compare/v0.6.1...v0.7.0) (2026-11-15)
+
+### Features
+
+* implementing moving pieces on the board ([f92d9c6](https://github.com/dev-murphy/yaadchess/commit/f92d9c697ad86af620c005d616796f2bcb19cac0))
+
+### Miscellaneous
+
+* resolve merge conflict ([054f184](https://github.com/dev-murphy/yaadchess/commit/054f18454d38fff5c92475f1efc1039f3f074494))
+* add selected piece functionality ([dcc3fcd](https://github.com/dev-murphy/yaadchess/commit/dcc3fcd9ded22d6d38423f03a68704954b889aab))
+
+### Continuous Integration
+
+* update pyproject.toml to use [project].version instead of [commitizen].version ([20ed5d6](https://github.com/dev-murphy/yaadchess/commit/20ed5d65ccbc463ef69dff1012ebe2caee3793e8))
+
+## [0.6.1](https://github.com/dev-murphy/yaadchess/releases/tag/v0.6.1) (2026-11-14)
+
+### Code Refactors
+
+* update app name to just chess ([db61361](https://github.com/dev-murphy/yaadchess/commit/db613617a7716e87edb579940a25baa795c3ba8d))
+
+
 ## [0.6.1](https://github.com/dev-murphy/yaadchess/compare/v0.6.0...v0.6.1) (2026-11-14)
 
 ### Code Refactors
