@@ -12,6 +12,7 @@ export const useAppStore = defineStore("app", {
         piece: null,
       }),
     ) satisfies SquareInfo[][],
+    selectedSquare: [] as [number, number] | []
   }),
   actions: {
     initBoard() {
@@ -69,6 +70,13 @@ export const useAppStore = defineStore("app", {
         row: Math.floor(position / 8),
         col: position % 8,
       };
+    },
+    selectPiece(row: number, col: number) {
+      if (this.selectedSquare[0] === row && this.selectedSquare[1] === col) {
+        this.selectedSquare = [];
+        return;
+      }
+      this.selectedSquare = [row, col];
     },
   },
 });
