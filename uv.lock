@@ -826,8 +826,8 @@ wheels = [
 ]
 
 [[package]]
-name = "yaadchess"
-version = "0.1.0"
+name = "chess"
+version = "0.6.0"
 source = { virtual = "." }
 dependencies = [
     { name = "pywebview" },
