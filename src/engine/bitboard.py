@@ -1,69 +1,13 @@
 # Square index mapping: 0 = A1, 7 = H1, 56 = A8, 63 = H8
 SQUARES = [
-    "A1",
-    "A2",
-    "A3",
-    "A4",
-    "A5",
-    "A6",
-    "A7",
-    "A8",
-    "B1",
-    "B2",
-    "B3",
-    "B4",
-    "B5",
-    "B6",
-    "B7",
-    "B8",
-    "C1",
-    "C2",
-    "C3",
-    "C4",
-    "C5",
-    "C6",
-    "C7",
-    "C8",
-    "D1",
-    "D2",
-    "D3",
-    "D4",
-    "D5",
-    "D6",
-    "D7",
-    "D8",
-    "E1",
-    "E2",
-    "E3",
-    "E4",
-    "E5",
-    "E6",
-    "E7",
-    "E8",
-    "F1",
-    "F2",
-    "F3",
-    "F4",
-    "F5",
-    "F6",
-    "F7",
-    "F8",
-    "G1",
-    "G2",
-    "G3",
-    "G4",
-    "G5",
-    "G6",
-    "G7",
-    "G8",
-    "H1",
-    "H2",
-    "H3",
-    "H4",
-    "H5",
-    "H6",
-    "H7",
-    "H8",
+  "A1","B1","C1","D1","E1","F1","G1","H1",
+  "A2","B2","C2","D2","E2","F2","G2","H2",
+  "A3","B3","C3","D3","E3","F3","G3","H3",
+  "A4","B4","C4","D4","E4","F4","G4","H4",
+  "A5","B5","C5","D5","E5","F5","G5","H5",
+  "A6","B6","C6","D6","E6","F6","G6","H6",
+  "A7","B7","C7","D7","E7","F7","G7","H7",
+  "A8","B8","C8","D8","E8","F8","G8","H8",
 ]
 
 # Quick square lookup (e.g. SQ['E4'] => 24)
@@ -88,7 +32,7 @@ RANK_6 = RANK_1 << 40
 RANK_7 = RANK_1 << 48
 RANK_8 = RANK_1 << 56
 
-class ChessBitboard:
+class Bitboard:
     @staticmethod
     def set_bit(bitboard: int, square: int) -> int:
         """Set a bit at the bottom at the given square index (0-63)"""
@@ -125,7 +69,7 @@ class ChessBitboard:
     @staticmethod
     def print_bitboard(bitboard: int) -> None:
         """Prints an 8x8 representative of a single bitboard."""
-        print("\n  +----------------+ Bitboard Value: " + hex(bitboard))
+        print("\n  +-----------------------+ Bitboard Value: " + hex(bitboard))
         for rank in range(7, -1, -1):
             row = [f"{rank + 1} |"]
             for file in range(8):
@@ -133,5 +77,5 @@ class ChessBitboard:
                 bit = (bitboard >> square) & 1
                 row.append(" 1" if bit else " .")
             print(" ".join(row))
-        print("  +-----------------+")
-        print("    a b c d e f g h\n")
+        print("  +-----------------------+")
+        print("     a  b  c  d  e  f  g  h\n")
