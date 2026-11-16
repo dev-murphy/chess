@@ -60,7 +60,7 @@ const { x, y } = useDraggable(pieceImg, {
       ]"
       :style="
         isDragging === piece
-          ? { position: 'fixed', top: `${y}px`, left: `${x}px`, zIndex: '100' }
+          ? { position: 'fixed', top: `${y}px`, left: `${x}px`, zIndex: '100', pointerEvents: 'none' }
           : {}
       "
     />
