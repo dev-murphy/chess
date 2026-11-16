@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.9.0](https://github.com/dev-murphy/yaadchess/compare/v0.8.0...v0.9.0) (2026-11-16)
+
+### Features
+
+* add move generator for knight and king attacks ([6101455](https://github.com/dev-murphy/yaadchess/commit/6101455d64defea67b89f403778c6a199418f588))
+* set up chess class ([b259332](https://github.com/dev-murphy/yaadchess/commit/b2593323c10dbdc07e9b64ee510e988f4152142e))
+
+### Bug Fixes
+
+* fix rank typo and formatted code ([ed71f0c](https://github.com/dev-murphy/yaadchess/commit/ed71f0ca0479387cf1dd736df91cc7b6a7c21d5d))
+
+### Code Refactors
+
+* change class name to ChessBoard and fix white_occupied typo ([0948816](https://github.com/dev-murphy/yaadchess/commit/09488166797eab5e4e5f5a682783245befa2e9c9))
+* formatted src/__init__.py file ([24e77a7](https://github.com/dev-murphy/yaadchess/commit/24e77a720720e4a96d99f76eed60e4abcf6803fb))
+
+### Miscellaneous
+
+* update uv.lock file ([9d7241a](https://github.com/dev-murphy/yaadchess/commit/9d7241af33cea107d2d6fbec7599b90c92770bde))
+
+### Continuous Integration
+
+* include uv.lock into version bump commit ([a3e4cd1](https://github.com/dev-murphy/yaadchess/commit/a3e4cd1fddee8c5f970f44b94874811294ef5ff3))
+
+## [0.8.0](https://github.com/dev-murphy/yaadchess/releases/tag/v0.8.0) (2026-11-16)
+
+### Features
+
+* add sound effects for moving and capturig pieces ([76a0f8b](https://github.com/dev-murphy/yaadchess/commit/76a0f8b0d365c5d34c53b283c4c98602a6432833))
+
+### Miscellaneous
+
+* update uv.lock file ([2dcc323](https://github.com/dev-murphy/yaadchess/commit/2dcc323a9abbb8e54faec056e4831051ab8ef7a9))
+
+
 ## [0.8.0](https://github.com/dev-murphy/yaadchess/compare/v0.7.0...v0.8.0) (2026-11-16)
 
 ### Features
