@@ -29,6 +29,10 @@ annotated_tag = true
 update_changelog_on_bump = true
 changelog_file = "CHANGELOG.md"
 changelog_incremental = true
+pre_bump_hooks = [
+    "uv lock",
+    "git add uv.lock",
+]
 
 [tool.commitizen.customize]
 message_template = "{{change_type}}{% if scope %}({{scope}}){% endif %}{% if breaking %}!{% endif %}: {{message}}"
