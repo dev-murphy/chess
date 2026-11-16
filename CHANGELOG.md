@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.8.0](https://github.com/dev-murphy/yaadchess/compare/v0.7.0...v0.8.0) (2026-11-16)
+
+### Features
+
+* add sound effects for moving and capturig pieces ([76a0f8b](https://github.com/dev-murphy/yaadchess/commit/76a0f8b0d365c5d34c53b283c4c98602a6432833))
+
+### Miscellaneous
+
+* update uv.lock file ([2dcc323](https://github.com/dev-murphy/yaadchess/commit/2dcc323a9abbb8e54faec056e4831051ab8ef7a9))
+
+## [0.7.0](https://github.com/dev-murphy/yaadchess/releases/tag/v0.7.0) (2026-11-15)
+
+### Features
+
+* implementing moving pieces on the board ([f92d9c6](https://github.com/dev-murphy/yaadchess/commit/f92d9c697ad86af620c005d616796f2bcb19cac0))
+
+### Miscellaneous
+
+* resolve merge conflict ([054f184](https://github.com/dev-murphy/yaadchess/commit/054f18454d38fff5c92475f1efc1039f3f074494))
+* add selected piece functionality ([dcc3fcd](https://github.com/dev-murphy/yaadchess/commit/dcc3fcd9ded22d6d38423f03a68704954b889aab))
+
+### Continuous Integration
+
+* update pyproject.toml to use [project].version instead of [commitizen].version ([20ed5d6](https://github.com/dev-murphy/yaadchess/commit/20ed5d65ccbc463ef69dff1012ebe2caee3793e8))
+
+
 ## [0.7.0](https://github.com/dev-murphy/yaadchess/compare/v0.6.1...v0.7.0) (2026-11-15)
 
 ### Features
