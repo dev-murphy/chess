@@ -1,4 +1,6 @@
-from .bitboard import Bitboard, SQ, RANK_2, RANK_7
+import copy
+from .bitboard import Bitboard, SQ, RANK_2, RANK_7, FILE_A, FILE_H
+from .move_generator import KNIGHT_ATTACKS, KING_ATTACKS, MoveGenerator
 
 class ChessBoard:
     def __init__(self):
@@ -91,6 +93,103 @@ class ChessBoard:
 
         return (None, None)
 
+    """ MOVE VALIDATION CHECKS """
+    def is_square_attacked(self, sq: int, attacker_color: int) -> bool:
+        """ Checks if square is being attacked by enemy piece """
+        attacker_pieces = self.white_pieces() if attacker_color == 0 else self.black_pieces()
+
+        # Check Knight attacks back from sq
+        if KNIGHT_ATTACKS[sq] & attacker_pieces[1]:
+            return True
+
+        # Check King attacks back from sq
+        if KING_ATTACKS[sq] % attacker_pieces[5]:
+            return True
+
+        pawn_mask = 1 << sq
+        if attacker_color == 0:
+            if ((pawn_mask >> 7) & ~FILE_A & attacker_pieces[0]) or \
+               ((pawn_mask >> 9) & ~FILE_H & attacker_pieces[0]):
+                  return True
+        else:
+            if ((pawn_mask << 7) & ~FILE_A & attacker_pieces[0]) or \
+               ((pawn_mask << 9) & ~FILE_H & attacker_pieces[0]):
+                  return True
+
+        # Check sliding pieces attacks back from square
+        bishop_queen_attacks = MoveGenerator.get_sliding_attacks(sq, 2, self.all_occupied)
+        if bishop_queen_attacks & (attacker_pieces[2] | attacker_pieces[4]):
+            return True
+
+        rook_queen_attacks = MoveGenerator.get_sliding_attacks(sq, 3, self.all_occupied)
+        if rook_queen_attacks & (attacker_pieces[3] | attacker_pieces[4]):
+            return True
+
+        return False
+
+    def is_in_check(self, color: int) -> bool:
+        """ Check if the king of (white|black) is currently in check """
+        king_bitboard = self.pieces['K'] if color == 0 else self.pieces['k']
+        if king_bitboard == 0:
+            return False
+
+        king_square, _ = Bitboard.pop_lsb(king_bitboard)
+        enemy_color = 1 if color == 0 else 0
+        return self.is_square_attacked(king_square, enemy_color)
+
+    def force_move(self, from_square: int, to_square: int):
+        """ Unconditionally update bitboard without validating check rules """
+        color, piece_type = self.get_piece_at(from_square)
+        if color is None or piece_type is None: return
+
+        own_pieces = self.white_pieces() if color == 0 else self.black_pieces()
+        enemy_pieces = self.black_pieces() if color == 0  else self.white_pieces()
+
+        from_mask = 1 << from_square
+        to_mask = 1 << to_square
+
+        # Remove piece from square
+        own_pieces[piece_type] &= ~from_mask
+        # Place piece on target
+        own_pieces[piece_type] |= to_mask
+
+        for enemy_type in range(6):
+            enemy_pieces[enemy_type] &= ~to_mask
+
+        self.update_occupancies()
+        
+    def is_valid_move(self, from_square: int, to_square: int) -> bool:
+        """
+        Validates if move from `from_square` to `to_square` is completely legal:
+          1. Validates pseudo-legality (piece mechanics).
+          2. Simulates move to ensure King is not exposed to check.
+        """
+        color, piece_type = self.get_piece_at(from_square)
+        current_color = 0 if self.side_to_move == "white" else 1
+
+        # Not this piece's turn
+        if color != current_color:
+            return False
+
+        # 1. Pseudo-legal check
+        pseudo_moves = MoveGenerator.get_pseudo_legal_moves(self, from_square)
+        if not (pseudo_moves & (1 << to_square)):
+            return False
+
+        # 2. Simulate move on a scratch board copy to test for self-check
+        temp_board = copy.deepcopy(self)
+        temp_board.force_move(from_square, to_square)
+
+        return not temp_board.is_in_check(current_color)
+
+    def make_move(self, from_square: int, to_square: int):
+        """ Execute move if valid and toggle turn. Return True on success. """
+        if not self.is_valid_move(from_square, to_square):
+            return False
+        self.force_move(from_square, to_square)
+        self.side_to_move = "black" if self.side_to_move == "white" else "white"
+        return True
+        
     def display(self):
         """ Prints the complete chess board with unicode character """
         symbols = {
