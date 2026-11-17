@@ -27,6 +27,9 @@ class ChessBoard:
         self.black_occupied = 0
         self.all_occupied = 0
 
+        # Implement side to move
+        self.side_to_move = "white"
+
         # Reset to starting position
         self.reset_to_starting_position()
 
@@ -77,7 +80,16 @@ class ChessBoard:
         for b in self.black_pieces():
             self.black_occupied |= b
 
-        
+    def get_piece_at(self, sq: int) -> tuple[int, int] | tuple[None, None]:
+        """ Returns the pieces at the specific squares """
+        mask = 1 << sq
+        for piece_type, bitboard in enumerate(self.white_pieces()):
+            if bitboard & mask: return (0, piece_type)
+
+        for piece_type, bitboard in enumerate(self.black_pieces()):
+            if bitboard & mask: return (1, piece_type)
+
+        return (None, None)
 
     def display(self):
         """ Prints the complete chess board with unicode character """
