@@ -1,5 +1,6 @@
 from .bitboard import Bitboard, SQ, RANK_2, RANK_7, FILE_A, FILE_H
 from .move_generator import KNIGHT_ATTACKS, KING_ATTACKS, MoveGenerator
+from .move import Move
 
 PIECE_MAPS =["PNBRQK","pnbrqk"]
 
@@ -32,6 +33,9 @@ class ChessBoard:
 
         # Implement side to move
         self.side_to_move = "white"
+
+        # Move log
+        self.move_log = []
 
         # Reset to starting position
         self.reset_to_starting_position()
@@ -150,14 +154,20 @@ class ChessBoard:
         from_mask = 1 << from_square
         to_mask = 1 << to_square
 
+        # Check if there is an enemy piece and add it to move log
+        c, p_t = self.get_piece_at(to_square)
+        enemy_piece = None
+        if (c is not None or c != color) and p_t is not None:
+            enemy_piece = enemy_pieces[p_t]
+
         for enemy_type in range(6):
             self.pieces[enemy_pieces[enemy_type]] &= ~to_mask
 
-        # Remove piece from square
+        own_piece = own_pieces[piece_type]
         self.pieces[own_pieces[piece_type]] &= ~from_mask
-        # Place piece on target
         self.pieces[own_pieces[piece_type]] |= to_mask
 
+        self.move_log.append(Move(from_square, to_square, own_piece, enemy_piece))
         self.update_occupancies()
         
     def is_valid_move(self, from_square: int, to_square: int) -> bool:
@@ -219,7 +229,7 @@ class ChessBoard:
         """ Returns True if (white|black) has at least one legal move """
         own_pieces = self.white_pieces() if color == 0 else self.black_pieces()
 
-        # Loop over all of the 6 piece types ()
+        # Loop over all of the 6 piece types (Pawn, Rook, Bishop, Knight, Queen, King)
         for piece_type in range(6):
             bitboard = own_pieces[piece_type]
 
