@@ -1,6 +1,7 @@
-import copy
 from .bitboard import Bitboard, SQ, RANK_2, RANK_7, FILE_A, FILE_H
 from .move_generator import KNIGHT_ATTACKS, KING_ATTACKS, MoveGenerator
+
+PIECE_MAPS =["PNBRQK","pnbrqk"]
 
 class ChessBoard:
     def __init__(self):
@@ -143,10 +144,8 @@ class ChessBoard:
         color, piece_type = self.get_piece_at(from_square)
         if color is None or piece_type is None: return
 
-        piece_maps =["PNBRQK","pnbrqk"]
-
-        own_pieces = piece_maps[0] if color == 0 else piece_maps[1]
-        enemy_pieces = piece_maps[1] if color == 0  else piece_maps[0]
+        own_pieces = PIECE_MAPS[0] if color == 0 else PIECE_MAPS[1]
+        enemy_pieces = PIECE_MAPS[1] if color == 0  else PIECE_MAPS[0]
 
         from_mask = 1 << from_square
         to_mask = 1 << to_square
@@ -167,11 +166,11 @@ class ChessBoard:
           1. Validates pseudo-legality (piece mechanics).
           2. Simulates move to ensure King is not exposed to check.
         """
-        color, _ = self.get_piece_at(from_square)
+        color, piece_type = self.get_piece_at(from_square)
         current_color = 0 if self.side_to_move == "white" else 1
 
         # Not this piece's turn
-        if color != current_color:
+        if color != current_color or piece_type is None:
             return False
 
         # 1. Pseudo-legal check
@@ -179,11 +178,34 @@ class ChessBoard:
         if not (pseudo_moves & (1 << to_square)):
             return False
 
-        # 2. Simulate move on a scratch board copy to test for self-check
-        temp_board = copy.deepcopy(self)
-        temp_board.force_move(from_square, to_square)
+        own_pieces = PIECE_MAPS[0] if color == 0 else PIECE_MAPS[1]
+        enemy_pieces = PIECE_MAPS[1] if color == 0 else PIECE_MAPS[0]
 
-        return not temp_board.is_in_check(current_color)
+        from_mask = 1 << from_square
+        to_mask = 1 << to_square
+        move_mask = from_mask | to_mask
+
+        # Check if an enemy piece is captured on square
+        captured_type = None
+        for enemy_type in range(6):
+            if self.pieces[enemy_pieces[enemy_type]] & to_mask:
+                captured_type = enemy_type
+                break
+
+        # MAKE MOVE-IN-PLACE 
+        self.pieces[own_pieces[piece_type]] ^= move_mask
+        if captured_type is not None:
+            self.pieces[enemy_pieces[captured_type]] ^= to_mask
+        self.update_occupancies()
+
+        in_check = self.is_in_check(current_color)
+
+        self.pieces[own_pieces[piece_type]] ^= move_mask
+        if captured_type is not None:
+            self.pieces[enemy_pieces[captured_type]] ^= to_mask
+        self.update_occupancies()
+
+        return not in_check
 
     def make_move(self, from_square: int, to_square: int):
         """ Execute move if valid and toggle turn. Return True on success. """
@@ -192,6 +214,39 @@ class ChessBoard:
         self.force_move(from_square, to_square)
         self.side_to_move = "black" if self.side_to_move == "white" else "white"
         return True
+    
+    def has_legal_moves(self, color: int) -> bool:
+        """ Returns True if (white|black) has at least one legal move """
+        own_pieces = self.white_pieces() if color == 0 else self.black_pieces()
+
+        # Loop over all of the 6 piece types ()
+        for piece_type in range(6):
+            bitboard = own_pieces[piece_type]
+
+            # Pop each piece of this type from its bitboard 
+            while bitboard:
+                from_square, bitboard = Bitboard.pop_lsb(bitboard)
+
+                # Get all pseudo-legal target squares for this piece
+                pseudo_moves = MoveGenerator.get_pseudo_legal_moves(self, from_square)
+
+                # Test each square until we find ONE legal move
+                while pseudo_moves:
+                    to_square, pseudo_moves = Bitboard.pop_lsb(pseudo_moves)
+                    if self.is_valid_move(from_square, to_square):
+                        return True
+
+        return False
+            
+    def is_checkmate(self) -> bool:
+        """ Return True if the current color is in check and has no legal moves. """
+        current_color = 0 if self.side_to_move == "white" else 1
+        return self.is_in_check(current_color) and not self.has_legal_moves(current_color)
+    
+    def is_stalemate(self) -> bool:
+        """ Return True if the current color is not in check and no legal moves. """
+        current_color = 0 if self.side_to_move == "white" else 1
+        return not self.is_in_check(current_color) and not self.has_legal_moves(current_color)
         
     def display(self):
         """ Prints the complete chess board with unicode character """
