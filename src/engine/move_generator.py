@@ -1,9 +1,9 @@
-from . import ChessBoard
 from .bitboard import FILE_A, FILE_B, FILE_G, FILE_H, RANK_2, RANK_7
 
 """ Generate moves for a knight and a king on every position on the board """
 KNIGHT_ATTACKS = [0] * 64
 KING_ATTACKS = [0] * 64
+FULL_BOARD = 0xFFFFFFFFFFFFFFFF
 
 NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST = range(8)
 RAY_ATTACKS = [[0] * 64 for _ in range(8)]
@@ -25,7 +25,7 @@ class MoveGenerator:
             n_attacks |= (bitboard & ~FILE_H) >> 15
             n_attacks |= (bitboard & ~FILE_A) >> 17
             n_attacks |= (bitboard & ~FILE_A & ~FILE_B) >> 10
-            KNIGHT_ATTACKS[sq] = n_attacks
+            KNIGHT_ATTACKS[sq] = n_attacks & FULL_BOARD
         
             # These are the king moves 
             k_attacks = 0
@@ -37,7 +37,7 @@ class MoveGenerator:
             k_attacks |= bitboard >> 8
             k_attacks |= (bitboard & ~FILE_A) >> 9
             k_attacks |= (bitboard & ~FILE_A) >> 1
-            KING_ATTACKS[sq] = k_attacks
+            KING_ATTACKS[sq] = k_attacks & FULL_BOARD
 
     @staticmethod
     def precomputed_rays():
@@ -52,7 +52,7 @@ class MoveGenerator:
              (1,-1),  # Nort West
          ]
          
-         for sq in range(8):
+         for sq in range(64):
              start_rank, start_file = sq // 8, sq % 8
              for direction, (rank_delta, file_delta) in enumerate(deltas):
                  ray = 0
@@ -78,8 +78,8 @@ class MoveGenerator:
                  targets |= (bitboard << 16) & ~occupied
      
              # Captures - use mask to prevent warping the board
-             if bitboard & ~FILE_H: targets |= (bitboard << 7) & enemy_occupied
-             if bitboard & ~FILE_A: targets |= (bitboard << 9) & enemy_occupied
+             targets |= (bitboard << 7 & ~FILE_H) & enemy_occupied
+             targets |= (bitboard << 9 & ~FILE_A) & enemy_occupied
          else: # for black pawns
              single_push = (bitboard >> 8) & ~occupied
              targets |= single_push
@@ -89,10 +89,10 @@ class MoveGenerator:
                  targets |= (bitboard >> 16) & ~occupied
      
              # Captures (same as above, just inverted)
-             if bitboard & ~FILE_H: targets |= (bitboard >> 7) & enemy_occupied
-             if bitboard & ~FILE_A: targets |= (bitboard >> 9) & enemy_occupied
+             targets |= (bitboard >> 7 & ~FILE_A) & enemy_occupied
+             targets |= (bitboard >> 9 & ~FILE_H) & enemy_occupied
      
-         return targets
+         return targets & FULL_BOARD
    
     @staticmethod   
     def get_ray_attacks(sq: int, occupied: int, rank_delta: int, file_delta: int) -> int:
@@ -130,7 +130,7 @@ class MoveGenerator:
         return attacks
 
     @classmethod
-    def get_pseudo_legal_moves(cls, board: ChessBoard, sq: int) -> int:
+    def get_pseudo_legal_moves(cls, board, sq: int) -> int:
         """ Return a bitboard with all the pseudo-legal moves for a pieces on a specific square """
         color, piece_type = board.get_piece_at(sq)
         if color is None or color != (0 if board.side_to_move == "white" else 1):
@@ -145,8 +145,9 @@ class MoveGenerator:
         elif piece_type == 1:
             return KNIGHT_ATTACKS[sq] & ~own_occupied
         elif piece_type in (2, 3, 4):
-            return cls.get_sliding_attacks(sq, piece_type, board.all_occupied) & ~enemy_occupied
+            return cls.get_sliding_attacks(sq, piece_type, board.all_occupied) & ~own_occupied
         elif piece_type == 5:
             return KING_ATTACKS[sq] & ~own_occupied
         return 0
-      
+
+MoveGenerator.precomputed_leaper_moves()

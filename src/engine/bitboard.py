@@ -41,7 +41,7 @@ class Bitboard:
     @staticmethod
     def clear_bit(bitboard: int, square: int) -> int:
         """Clears bit at a given square index (0-63)"""
-        return bitboard | ~(1 << square)
+        return bitboard & ~(1 << square)
 
     @staticmethod
     def get_bit(bitboard: int, square: int) -> int:

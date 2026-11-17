@@ -58,15 +58,15 @@ class ChessBoard:
     def reset_to_starting_position(self):
         self.pieces["p"] = RANK_7
         self.pieces["r"] = (1 << SQ["A8"]) | (1 << SQ["H8"])
-        self.pieces["b"] = (1 << SQ["B8"]) | (1 << SQ["G8"])
-        self.pieces["n"] = (1 << SQ["C8"]) | (1 << SQ["F8"])
+        self.pieces["n"] = (1 << SQ["B8"]) | (1 << SQ["G8"])
+        self.pieces["b"] = (1 << SQ["C8"]) | (1 << SQ["F8"])
         self.pieces["q"] = 1 << SQ["D8"]
         self.pieces["k"] = 1 << SQ["E8"]
 
         self.pieces["P"] = RANK_2
         self.pieces["R"] = (1 << SQ["A1"]) | (1 << SQ["H1"])
-        self.pieces["B"] = (1 << SQ["B1"]) | (1 << SQ["G1"])
-        self.pieces["N"] = (1 << SQ["C1"]) | (1 << SQ["F1"])
+        self.pieces["N"] = (1 << SQ["B1"]) | (1 << SQ["G1"])
+        self.pieces["B"] = (1 << SQ["C1"]) | (1 << SQ["F1"])
         self.pieces["Q"] = 1 << SQ["D1"]
         self.pieces["K"] = 1 << SQ["E1"]
 
@@ -81,6 +81,8 @@ class ChessBoard:
         self.black_occupied = 0
         for b in self.black_pieces():
             self.black_occupied |= b
+
+        self.all_occupied = self.white_occupied | self.black_occupied
 
     def get_piece_at(self, sq: int) -> tuple[int, int] | tuple[None, None]:
         """ Returns the pieces at the specific squares """
@@ -103,7 +105,7 @@ class ChessBoard:
             return True
 
         # Check King attacks back from sq
-        if KING_ATTACKS[sq] % attacker_pieces[5]:
+        if KING_ATTACKS[sq] & attacker_pieces[5]:
             return True
 
         pawn_mask = 1 << sq
@@ -112,8 +114,8 @@ class ChessBoard:
                ((pawn_mask >> 9) & ~FILE_H & attacker_pieces[0]):
                   return True
         else:
-            if ((pawn_mask << 7) & ~FILE_A & attacker_pieces[0]) or \
-               ((pawn_mask << 9) & ~FILE_H & attacker_pieces[0]):
+            if ((pawn_mask << 7) & ~FILE_H & attacker_pieces[0]) or \
+               ((pawn_mask << 9) & ~FILE_A & attacker_pieces[0]):
                   return True
 
         # Check sliding pieces attacks back from square
@@ -129,10 +131,9 @@ class ChessBoard:
 
     def is_in_check(self, color: int) -> bool:
         """ Check if the king of (white|black) is currently in check """
-        king_bitboard = self.pieces['K'] if color == 0 else self.pieces['k']
+        king_bitboard = self.white_pieces()[5] if color == 0 else self.black_pieces()[5]
         if king_bitboard == 0:
             return False
-
         king_square, _ = Bitboard.pop_lsb(king_bitboard)
         enemy_color = 1 if color == 0 else 0
         return self.is_square_attacked(king_square, enemy_color)
@@ -142,19 +143,21 @@ class ChessBoard:
         color, piece_type = self.get_piece_at(from_square)
         if color is None or piece_type is None: return
 
-        own_pieces = self.white_pieces() if color == 0 else self.black_pieces()
-        enemy_pieces = self.black_pieces() if color == 0  else self.white_pieces()
+        piece_maps =["PNBRQK","pnbrqk"]
+
+        own_pieces = piece_maps[0] if color == 0 else piece_maps[1]
+        enemy_pieces = piece_maps[1] if color == 0  else piece_maps[0]
 
         from_mask = 1 << from_square
         to_mask = 1 << to_square
 
-        # Remove piece from square
-        own_pieces[piece_type] &= ~from_mask
-        # Place piece on target
-        own_pieces[piece_type] |= to_mask
-
         for enemy_type in range(6):
-            enemy_pieces[enemy_type] &= ~to_mask
+            self.pieces[enemy_pieces[enemy_type]] &= ~to_mask
+
+        # Remove piece from square
+        self.pieces[own_pieces[piece_type]] &= ~from_mask
+        # Place piece on target
+        self.pieces[own_pieces[piece_type]] |= to_mask
 
         self.update_occupancies()
         
@@ -164,7 +167,7 @@ class ChessBoard:
           1. Validates pseudo-legality (piece mechanics).
           2. Simulates move to ensure King is not exposed to check.
         """
-        color, piece_type = self.get_piece_at(from_square)
+        color, _ = self.get_piece_at(from_square)
         current_color = 0 if self.side_to_move == "white" else 1
 
         # Not this piece's turn
@@ -197,7 +200,7 @@ class ChessBoard:
             (1, 0): "♟", (1, 1): "♞", (1, 2): "♝", (1, 3): "♜", (1, 4): "♛", (1, 5): "♚"
         }
         grid = [["." for _ in range(8)] for _ in range(8)]
-        for color, pieces in [(0,self.black_pieces()), (1, self.white_pieces())]:
+        for color, pieces in [(1,self.black_pieces()), (0, self.white_pieces())]:
             for piece_type, bitboard in enumerate(pieces):
                 temp_bitboard = bitboard
                 while temp_bitboard:
