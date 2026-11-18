@@ -29,7 +29,7 @@ def main():
     # PROD_URL is a Path, I need to convert it to a string
     url = DEV_URL if mode == "--dev" else PROD_URL.as_uri()
     webview.create_window(
-        title="Yaad Chess", url=url, width=950, height=750, resizable=False
+        title="Chess", url=url, width=950, height=750, resizable=False
     )
 
     webview.start(
