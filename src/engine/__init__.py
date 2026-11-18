@@ -225,8 +225,9 @@ class ChessBoard:
         self.side_to_move = "black" if self.side_to_move == "white" else "white"
         return True
     
-    def has_legal_moves(self, color: int) -> bool:
-        """ Returns True if (white|black) has at least one legal move """
+    def get_legal_moves(self, color: int) -> dict[str, list[list[int]]]:
+        """ Returns all legal moves for `color` formatted for Vue: {'row,col': [[to_r, to_c], ...]} """
+        legal_moves = {}
         own_pieces = self.white_pieces() if color == 0 else self.black_pieces()
 
         # Loop over all of the 6 piece types (Pawn, Rook, Bishop, Knight, Queen, King)
@@ -236,27 +237,33 @@ class ChessBoard:
             # Pop each piece of this type from its bitboard 
             while bitboard:
                 from_square, bitboard = Bitboard.pop_lsb(bitboard)
+                from_r, from_c = divmod(from_square, 8)
 
                 # Get all pseudo-legal target squares for this piece
                 pseudo_moves = MoveGenerator.get_pseudo_legal_moves(self, from_square)
+                valid_targets = []
 
                 # Test each square until we find ONE legal move
                 while pseudo_moves:
                     to_square, pseudo_moves = Bitboard.pop_lsb(pseudo_moves)
                     if self.is_valid_move(from_square, to_square):
-                        return True
+                        to_r, to_c = divmod(to_square, 8)
+                        valid_targets.append([to_r, to_c])
 
-        return False
-            
+                if valid_targets:
+                    legal_moves[f"${from_r},{from_c}"] = valid_targets
+
+        return legal_moves
+    
     def is_checkmate(self) -> bool:
         """ Return True if the current color is in check and has no legal moves. """
         current_color = 0 if self.side_to_move == "white" else 1
-        return self.is_in_check(current_color) and not self.has_legal_moves(current_color)
+        return self.is_in_check(current_color) and not bool(self.get_legal_moves(current_color))
     
     def is_stalemate(self) -> bool:
         """ Return True if the current color is not in check and no legal moves. """
         current_color = 0 if self.side_to_move == "white" else 1
-        return not self.is_in_check(current_color) and not self.has_legal_moves(current_color)
+        return not self.is_in_check(current_color) and not bool(self.get_legal_moves(current_color))
         
     def display(self):
         """ Prints the complete chess board with unicode character """

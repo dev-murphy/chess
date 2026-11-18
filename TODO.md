@@ -2,7 +2,7 @@
 
 ## Finishing up the chess engine
 
-- [ ] Generate all legal moves for pieces of current color (white|black)
+- [x] Generate all legal moves for pieces of current color (white|black)
 - [ ] Implement special moves (castling, en passant, promotion)
 - [ ] Implement FEN notation parser and serializer
 - [ ] Update the `chess_notation` function to account for special moves
