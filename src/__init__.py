@@ -2,6 +2,7 @@ import webview
 from pathlib import Path
 import sys
 
+from api import ChessAPI
 
 def get_resource_path(relative_path: str) -> Path:
     """Resolve resources in development and packaged builds."""
@@ -14,6 +15,9 @@ def get_resource_path(relative_path: str) -> Path:
 
 
 def main():
+    # Initialize chess api
+    api = ChessAPI('1')
+
     # Get URLs for dev and production server
     DEV_URL = "http://localhost:5173"
     PROD_URL = get_resource_path("ui/dist/index.html")
@@ -29,7 +33,12 @@ def main():
     # PROD_URL is a Path, I need to convert it to a string
     url = DEV_URL if mode == "--dev" else PROD_URL.as_uri()
     webview.create_window(
-        title="Chess", url=url, width=950, height=750, resizable=False
+        title="Chess", 
+        url=url, 
+        width=950, 
+        height=750, 
+        resizable=False,
+        js_api=api
     )
 
     webview.start(

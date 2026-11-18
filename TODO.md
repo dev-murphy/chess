@@ -11,9 +11,9 @@
 
 ## Chess API
 
-- [ ] Create chess api class
-- [ ] Implement `get_game_state` function
-- [ ] Implement `send_move` function
+- [x] Create chess api class
+- [x] Implement `get_game_state` function. This is called `to_json`.
+- [x] Implement `make_move` function
 - [ ] Implement `get_fen_notation` function
 
 ## UI
