@@ -39,7 +39,7 @@ chmod +x scripts/prod.sh
 
 ## What happened?
 
-If you are curious, please feel free to see [CHANGELOG](./CHANGELOG.md) to see implemented features and bug fixes.
+If you are curious, please feel free to see [CHANGELOG](./CHANGELOG.md) to see implemented features and bug fixes. And if you want to check what I am currently working on (in no particular order), check out the [TODO.md](./TODO.md) file.
 
 ## License
 
