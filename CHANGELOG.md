@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.10.1](https://github.com/dev-murphy/yaadchess/compare/v0.10.0...v0.10.1) (2026-11-18)
+
+### Bug Fixes
+
+* remove "Yaad" from application title ([0c449b6](https://github.com/dev-murphy/yaadchess/commit/0c449b642a4e43ce0bae58377df782d4631dd37b))
+
+### Documentation
+
+* create TODO.md to track what's left ([6061733](https://github.com/dev-murphy/yaadchess/commit/6061733a30a8c710e1f7dc45ebc36d543fbcfa08))
+
+### Miscellaneous
+
+* change app logo ([81b4345](https://github.com/dev-murphy/yaadchess/commit/81b43455e7dd584c2aefd128597db8a21edfc884))
+
+## [0.10.0](https://github.com/dev-murphy/yaadchess/releases/tag/v0.10.0) (2026-11-18)
+
+### Features
+
+* add move class to log all moves made and piece captured ([58b7209](https://github.com/dev-murphy/yaadchess/commit/58b7209fb1addd95346b1c48172f48e8b8301c63))
+* implement functions to validate move based on piece type and color ([97d2bf4](https://github.com/dev-murphy/yaadchess/commit/97d2bf432f2f5539804eaaa75a1a0ed2d339a9c2))
+* implement functions to generate all pseudo-legal moves for all pieces ([e3f2fd6](https://github.com/dev-murphy/yaadchess/commit/e3f2fd6cbc448058a4e4cd15020ff795b8b2fd4a))
+
+### Bug Fixes
+
+* resolve issues with piece position, is_in_check, piece color, board wrapping and other things ([9bd9327](https://github.com/dev-murphy/yaadchess/commit/9bd9327a72172be048688dca7d55d37c8f3d2709))
+
+### Code Refactors
+
+* repleace deppcopy is_valid_move function with making move in place ([0ed4685](https://github.com/dev-murphy/yaadchess/commit/0ed4685f3d374ed0a6cdb969d9598e03d4e21285))
+
+
 ## [0.10.0](https://github.com/dev-murphy/yaadchess/compare/v0.9.0...v0.10.0) (2026-11-18)
 
 ### Features
