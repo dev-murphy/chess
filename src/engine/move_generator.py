@@ -178,7 +178,7 @@ class MoveGenerator:
         return attacks
 
     @classmethod
-    def get_pseudo_legal_moves(cls, board, sq: int) -> int:
+    def get_pseudo_legal_moves(cls, board: ChessBoard, sq: int) -> int:
         """ Return a bitboard with all the pseudo-legal moves for a pieces on a specific square """
         color, piece_type = board.get_piece_at(sq)
         if color is None or color != (0 if board.side_to_move == "white" else 1):
@@ -189,13 +189,13 @@ class MoveGenerator:
 
         # 0: Pawns, 1: Knights, 2: Bishop, 3: Rooks, 4: Queen, 5:   
         if piece_type == 0: 
-            return cls.get_pawn_attacks(sq, color, board.all_occupied, enemy_occupied)
+            return cls.get_pawn_attacks(sq, color, board.all_occupied, enemy_occupied, board.en_passant_sq)
         elif piece_type == 1:
             return KNIGHT_ATTACKS[sq] & ~own_occupied
         elif piece_type in (2, 3, 4):
             return cls.get_sliding_attacks(sq, piece_type, board.all_occupied) & ~own_occupied
         elif piece_type == 5:
-            return KING_ATTACKS[sq] & ~own_occupied
+            return cls.get_king_moves(board, sq, color)
         return 0
 
 MoveGenerator.precomputed_leaper_moves()
