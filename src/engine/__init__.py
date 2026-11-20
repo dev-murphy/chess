@@ -66,6 +66,11 @@ class ChessBoard:
         ]
 
     def reset_to_starting_position(self):
+        self.move_log = []
+        self.castling_rights = 0b1111
+        self.en_passant_sq = None
+        self.side_to_move = "white"
+        
         self.pieces["p"] = RANK_7
         self.pieces["r"] = (1 << SQ["A8"]) | (1 << SQ["H8"])
         self.pieces["n"] = (1 << SQ["B8"]) | (1 << SQ["G8"])
@@ -84,7 +89,6 @@ class ChessBoard:
         
     def update_occupancies(self):
         self.white_occupied = 0
-        
         for b in self.white_pieces():
             self.white_occupied |= b
 
