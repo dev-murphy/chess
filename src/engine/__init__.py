@@ -1,5 +1,5 @@
 from .bitboard import Bitboard, SQ, RANK_2, RANK_7, FILE_A, FILE_H
-from .move_generator import KNIGHT_ATTACKS, KING_ATTACKS, MoveGenerator
+from .move_generator import CASTLING_RIGHTS_MASK, KNIGHT_ATTACKS, KING_ATTACKS, MoveGenerator
 from .move import Move
 
 PIECE_MAPS =["PNBRQK","pnbrqk"]
@@ -148,13 +148,14 @@ class ChessBoard:
         enemy_color = 1 if color == 0 else 0
         return self.is_square_attacked(king_square, enemy_color)
 
-    def force_move(self, from_square: int, to_square: int):
+    def force_move(self, from_square: int, to_square: int, promotion_type: int):
         """ Unconditionally update bitboard without validating check rules """
         color, piece_type = self.get_piece_at(from_square)
         if color is None or piece_type is None: return
 
         own_pieces = PIECE_MAPS[0] if color == 0 else PIECE_MAPS[1]
         enemy_pieces = PIECE_MAPS[1] if color == 0  else PIECE_MAPS[0]
+        own_piece = own_pieces[piece_type]
 
         from_mask = 1 << from_square
         to_mask = 1 << to_square
@@ -168,10 +169,41 @@ class ChessBoard:
         for enemy_type in range(6):
             self.pieces[enemy_pieces[enemy_type]] &= ~to_mask
 
-        own_piece = own_pieces[piece_type]
-        self.pieces[own_pieces[piece_type]] &= ~from_mask
-        self.pieces[own_pieces[piece_type]] |= to_mask
+        # En passant capture
+        if piece_type == 0 and to_square == self.en_passant_sq:
+            captured_pawn_sq = to_square - 8 if color == 0 else to_square + 8
+            enemy_piece = enemy_pieces[piece_type]
+            self.pieces[enemy_pieces[piece_type]] &= ~(1 << captured_pawn_sq)
 
+        # Promotion 
+        self.pieces[own_pieces[piece_type]] &= ~from_mask
+        is_promotion = (piece_type == 0) and (to_square >= 56 or to_square <= 7)
+        if is_promotion:
+            promo = PROMOTION_PIECES[promotion_type]
+            promo = promo.upper() if color == 0 else promo
+            self.pieces[promo] |= to_mask
+        else:
+            self.pieces[own_pieces[piece_type]] |= to_mask
+
+        if piece_type == 5 and abs(to_square - from_square) == 2:
+            # White Kingside
+            if to_square == SQ["G1"]:
+                self.pieces[own_pieces[3]] ^= (1 << SQ["H1"]) | (1 << SQ["F1"])
+            elif to_square == SQ["C1"]:
+                self.pieces[own_pieces[3]] ^= (1 << SQ["A1"]) | (1 << SQ["D1"])
+            elif to_square == SQ["G8"]:
+                self.pieces[own_pieces[3]] ^= (1 << SQ["H8"]) | (1 << SQ["F8"])
+            elif to_square == SQ["C8"]:
+                self.pieces[own_pieces[3]] ^= (1 << SQ["A8"]) | (1 << SQ["D8"])
+
+        if piece_type == 0 and abs(to_square - from_square) == 16:
+            self.en_passant_sq = (from_square + to_square) // 2
+        else:
+            self.en_passant_sq = None
+
+        self.castling_rights &= CASTLING_RIGHTS_MASK[from_square]
+        self.castling_rights &= CASTLING_RIGHTS_MASK[to_square]
+        
         self.move_log.append(Move(from_square, to_square, own_piece, enemy_piece))
         self.update_occupancies()
         
@@ -202,31 +234,36 @@ class ChessBoard:
 
         # Check if an enemy piece is captured on square
         captured_type = None
-        for enemy_type in range(6):
-            if self.pieces[enemy_pieces[enemy_type]] & to_mask:
-                captured_type = enemy_type
-                break
+        captured_mask = to_mask
+        if piece_type == 0 and to_square == self.en_passant_sq:
+            captured_type = 0
+            captured_mask = 1 << (to_square - 8 if color == 0 else to_square + 8)
+        else:
+            for enemy_type in range(6):
+                if self.pieces[enemy_pieces[enemy_type]] & to_mask:
+                    captured_type = enemy_type
+                    break
 
         # MAKE MOVE-IN-PLACE 
         self.pieces[own_pieces[piece_type]] ^= move_mask
         if captured_type is not None:
-            self.pieces[enemy_pieces[captured_type]] ^= to_mask
+            self.pieces[enemy_pieces[captured_type]] ^= captured_mask
         self.update_occupancies()
 
         in_check = self.is_in_check(current_color)
 
         self.pieces[own_pieces[piece_type]] ^= move_mask
         if captured_type is not None:
-            self.pieces[enemy_pieces[captured_type]] ^= to_mask
+            self.pieces[enemy_pieces[captured_type]] ^= captured_mask
+            
         self.update_occupancies()
-
         return not in_check
 
-    def make_move(self, from_square: int, to_square: int):
+    def make_move(self, from_square: int, to_square: int, promotion_type: int):
         """ Execute move if valid and toggle turn. Return True on success. """
         if not self.is_valid_move(from_square, to_square):
             return False
-        self.force_move(from_square, to_square)
+        self.force_move(from_square, to_square, promotion_type)
         self.side_to_move = "black" if self.side_to_move == "white" else "white"
         return True
     

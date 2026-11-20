@@ -129,7 +129,7 @@ class MoveGenerator:
                     targets |= (1 << SQ["G1"])
 
             if (board.castling_rights & WQ_CASTLE) and not (board.all_occupied & ((1 << SQ["B1"]) | (1 << SQ["C1"]) | (1 << SQ["D1"]))):
-                if not board.is_square_attacked(SQ["C1"], enemy_color):
+                if not board.is_square_attacked(SQ["D1"], enemy_color):
                     targets |= (1 << SQ["C1"])
 
         elif color == 1 and sq == SQ["E8"] and not board.is_in_check(color):
