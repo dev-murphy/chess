@@ -3,6 +3,7 @@ from .move_generator import KNIGHT_ATTACKS, KING_ATTACKS, MoveGenerator
 from .move import Move
 
 PIECE_MAPS =["PNBRQK","pnbrqk"]
+PROMOTION_PIECES = "nbrq"
 
 class ChessBoard:
     def __init__(self):
@@ -30,6 +31,10 @@ class ChessBoard:
         self.white_occupied = 0
         self.black_occupied = 0
         self.all_occupied = 0
+
+        # Special move flags
+        self.en_passant_sq = None
+        self.castling_rights = 0b1111
 
         # Implement side to move
         self.side_to_move = "white"
