@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.11.0](https://github.com/dev-murphy/yaadchess/compare/v0.10.1...v0.11.0) (2026-11-20)
+
+### Features
+
+* implement Chess API class, composables, typescript types ([8c4b404](https://github.com/dev-murphy/yaadchess/commit/8c4b404b3c4d5716016be18961ee8a3e5b3857aa))
+
+### Code Refactors
+
+* change has_legal_moves function to get_legal_moves ([671c5f6](https://github.com/dev-murphy/yaadchess/commit/671c5f64be5556ca2928dc6f02ffe4ca9f3714ef))
+
+## [0.10.1](https://github.com/dev-murphy/yaadchess/releases/tag/v0.10.1) (2026-11-18)
+
+### Bug Fixes
+
+* remove "Yaad" from application title ([0c449b6](https://github.com/dev-murphy/yaadchess/commit/0c449b642a4e43ce0bae58377df782d4631dd37b))
+
+### Documentation
+
+* create TODO.md to track what's left ([6061733](https://github.com/dev-murphy/yaadchess/commit/6061733a30a8c710e1f7dc45ebc36d543fbcfa08))
+
+### Miscellaneous
+
+* change app logo ([81b4345](https://github.com/dev-murphy/yaadchess/commit/81b43455e7dd584c2aefd128597db8a21edfc884))
+
+
 ## [0.10.1](https://github.com/dev-murphy/yaadchess/compare/v0.10.0...v0.10.1) (2026-11-18)
 
 ### Bug Fixes
