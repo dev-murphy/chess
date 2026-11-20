@@ -64,11 +64,16 @@ class MoveGenerator:
                  RAY_ATTACKS[direction][sq] = ray
 
     @classmethod
-    def get_pawn_attacks(cls, sq: int, color: int, occupied: int, enemy_occupied: int) -> int:
+    def get_pawn_attacks(cls, sq: int, color: int, occupied: int, enemy_occupied: int, en_passant_square: int | None) -> int:
          """ Generate single pushes, double pushes and diagonal captures for a given pawn"""
          targets = 0
          bitboard = 1 << sq
-     
+
+         # If en_passant is active, add it to the valid capture targets
+         capture_targets = enemy_occupied
+         if en_passant_square is not None:
+            capture_targets |= (1 << en_passant_square)
+
          if color == 0: # for white pawns
              single_push = (bitboard << 8) & ~occupied
              targets |= single_push
@@ -78,8 +83,8 @@ class MoveGenerator:
                  targets |= (bitboard << 16) & ~occupied
      
              # Captures - use mask to prevent warping the board
-             targets |= (bitboard << 7 & ~FILE_H) & enemy_occupied
-             targets |= (bitboard << 9 & ~FILE_A) & enemy_occupied
+             targets |= (bitboard << 7 & ~FILE_H) & capture_targets
+             targets |= (bitboard << 9 & ~FILE_A) & capture_targets
          else: # for black pawns
              single_push = (bitboard >> 8) & ~occupied
              targets |= single_push
@@ -89,8 +94,8 @@ class MoveGenerator:
                  targets |= (bitboard >> 16) & ~occupied
      
              # Captures (same as above, just inverted)
-             targets |= (bitboard >> 7 & ~FILE_A) & enemy_occupied
-             targets |= (bitboard >> 9 & ~FILE_H) & enemy_occupied
+             targets |= (bitboard >> 7 & ~FILE_A) & capture_targets
+             targets |= (bitboard >> 9 & ~FILE_H) & capture_targets
      
          return targets & FULL_BOARD
    
