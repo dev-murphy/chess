@@ -1,9 +1,27 @@
-from .bitboard import FILE_A, FILE_B, FILE_G, FILE_H, RANK_2, RANK_7
+from .bitboard import FILE_A, FILE_B, FILE_G, FILE_H, RANK_2, RANK_7, SQ
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.engine import ChessBoard
 
 """ Generate moves for a knight and a king on every position on the board """
 KNIGHT_ATTACKS = [0] * 64
 KING_ATTACKS = [0] * 64
 FULL_BOARD = 0xFFFFFFFFFFFFFFFF
+
+# Castling rights bitmasks
+WK_CASTLE = 1  # 0b0001: White Kingside  (O-O)
+WQ_CASTLE = 2  # 0b0010: White Queenside (O-O-O)
+BK_CASTLE = 4  # 0b0100: Black Kingside  (O-O)
+BQ_CASTLE = 8  # 0b1000: Black Queenside (O-O-O)
+
+CASTLING_RIGHTS_MASK = [0b1111] * 64
+CASTLING_RIGHTS_MASK[SQ["E1"]] &= ~(WK_CASTLE | WQ_CASTLE)
+CASTLING_RIGHTS_MASK[SQ["H1"]] &= ~WK_CASTLE
+CASTLING_RIGHTS_MASK[SQ["A1"]] &= ~WQ_CASTLE
+CASTLING_RIGHTS_MASK[SQ["E8"]] &= ~(BK_CASTLE | BQ_CASTLE)
+CASTLING_RIGHTS_MASK[SQ["H8"]] &= ~BK_CASTLE
+CASTLING_RIGHTS_MASK[SQ["A8"]] &= ~BQ_CASTLE
 
 NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST = range(8)
 RAY_ATTACKS = [[0] * 64 for _ in range(8)]
@@ -98,7 +116,32 @@ class MoveGenerator:
              targets |= (bitboard >> 9 & ~FILE_H) & capture_targets
      
          return targets & FULL_BOARD
-   
+
+    @classmethod
+    def get_king_moves(cls, board: ChessBoard, sq: int, color: int):
+        own_occupied = board.white_occupied if color == 0 else board.black_occupied
+        targets = KING_ATTACKS[sq] & ~own_occupied
+        enemy_color = 1 if color == 0 else 0
+
+        if color == 0 and sq == SQ["E1"] and not board.is_in_check(color):
+            if (board.castling_rights & WK_CASTLE) and not (board.all_occupied & ((1 << SQ["F1"]) | (1 << SQ["G1"]))):
+                if not board.is_square_attacked(SQ["F1"], enemy_color):
+                    targets |= (1 << SQ["G1"])
+
+            if (board.castling_rights & WQ_CASTLE) and not (board.all_occupied & ((1 << SQ["B1"]) | (1 << SQ["C1"]) | (1 << SQ["D1"]))):
+                if not board.is_square_attacked(SQ["C1"], enemy_color):
+                    targets |= (1 << SQ["C1"])
+
+        elif color == 1 and sq == SQ["E8"] and not board.is_in_check(color):
+            if (board.castling_rights & BK_CASTLE) and not (board.all_occupied & ((1 << SQ["F8"]) | (1 << SQ["G8"]))):
+                if not board.is_square_attacked(SQ["F8"], enemy_color):
+                    targets |= (1 << SQ["G8"])
+            if (board.castling_rights & BQ_CASTLE) and not (board.all_occupied & ((1 << SQ["B8"]) | (1 << SQ["C8"]) | (1 << SQ["D8"]))):
+                if not board.is_square_attacked(SQ["D8"], enemy_color):
+                   targets |= (1 << SQ["C8"])
+
+        return targets 
+    
     @staticmethod   
     def get_ray_attacks(sq: int, occupied: int, rank_delta: int, file_delta: int) -> int:
          """ Generate ray attack (file_delta, rank_delta) stopping at the first collision """
