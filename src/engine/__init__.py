@@ -297,7 +297,7 @@ class ChessBoard:
                         valid_targets.append([to_r, to_c])
 
                 if valid_targets:
-                    legal_moves[f"${from_r},{from_c}"] = valid_targets
+                    legal_moves[f"{from_r},{from_c}"] = valid_targets
 
         return legal_moves
     
