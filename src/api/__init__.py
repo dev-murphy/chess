@@ -14,8 +14,8 @@ class ChessAPI:
 
         return "active" 
         
-    def make_move(self, from_square: int, to_square: int):
-        return self.board.make_move(from_square, to_square)
+    def make_move(self, from_square: int, to_square: int, promotion_type: int):
+        return self.board.make_move(from_square, to_square, promotion_type)
 
     def reset_game(self):
         return self.board.reset_to_starting_position()
