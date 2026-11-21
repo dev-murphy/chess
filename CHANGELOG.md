@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.11.1](https://github.com/dev-murphy/yaadchess/compare/v0.11.0...v0.11.1) (2026-11-21)
+
+### Bug Fixes
+
+* remove `$` typo error ([1bb9e65](https://github.com/dev-murphy/yaadchess/commit/1bb9e65b479b72a96b8384baffd74b127cd9ab0a))
+* reset other variables for special moves, side_to_move and move_log ([27ba16d](https://github.com/dev-murphy/yaadchess/commit/27ba16df8aa19d5cb91f758fe778abb1c09a56c8))
+* add promotion type to make_move function in api class ([17c50fb](https://github.com/dev-murphy/yaadchess/commit/17c50fb38e5aaaf98a00614f1c130cc9a7a5f4d8))
+* add en passant param in pseudo-legal moves and add get_king_moves functions ([af34261](https://github.com/dev-murphy/yaadchess/commit/af34261a8a8073ac160d74f2d12181c1fa6e11d1))
+
+### Miscellaneous
+
+* implement all special moves and mark it as done ([83921c7](https://github.com/dev-murphy/yaadchess/commit/83921c76b687001275d568121bff16b5d131b119))
+* add variables for special moves like castling, en passant and promotion ([f6cafd4](https://github.com/dev-murphy/yaadchess/commit/f6cafd416cb78ca8c370b83ea99ac24bbed683c3))
+* add castling rights and moves when getting king moves ([fa729d7](https://github.com/dev-murphy/yaadchess/commit/fa729d7823d017f1a765e9df6d819d748bd0aacb))
+* add en passant params and check to get_pawn_attacks function ([9fccdca](https://github.com/dev-murphy/yaadchess/commit/9fccdcada5a5f4be9f53ef09e021f408ee956dee))
+
+## [0.11.0](https://github.com/dev-murphy/yaadchess/releases/tag/v0.11.0) (2026-11-20)
+
+### Features
+
+* implement Chess API class, composables, typescript types ([8c4b404](https://github.com/dev-murphy/yaadchess/commit/8c4b404b3c4d5716016be18961ee8a3e5b3857aa))
+
+### Code Refactors
+
+* change has_legal_moves function to get_legal_moves ([671c5f6](https://github.com/dev-murphy/yaadchess/commit/671c5f64be5556ca2928dc6f02ffe4ca9f3714ef))
+
+
 ## [0.11.0](https://github.com/dev-murphy/yaadchess/compare/v0.10.1...v0.11.0) (2026-11-20)
 
 ### Features
