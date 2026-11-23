@@ -15,7 +15,11 @@ class ChessAPI:
         return "active" 
         
     def make_move(self, from_square: int, to_square: int, promotion_type: int):
-        return self.board.make_move(from_square, to_square, promotion_type)
+        is_valid = self.board.make_move(from_square, to_square, promotion_type)
+        return {
+          "valid_move": is_valid,
+          "state": self.to_json()
+        }
 
     def reset_game(self):
         return self.board.reset_to_starting_position()
@@ -37,5 +41,6 @@ class ChessAPI:
             "status": self.game_status(),
             "in_check": self.board.is_in_check(color),
             "legal_moves": self.board.get_legal_moves(color),
-            "last_move": last_move
+            "last_move": last_move,
+            "board": self.board.to_board_array(),
         }
