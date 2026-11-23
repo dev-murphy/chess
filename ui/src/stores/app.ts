@@ -11,8 +11,9 @@ export const useAppStore = defineStore("app", {
         color: "",
         piece: null,
       }),
-    ) satisfies SquareInfo[][],
-    selectedSquare: [] as [number, number] | []
+    ) as SquareInfo[][],
+    selectedSquare: null as [number, number] | null,
+    lastBoard: [] as string[]
   }),
   actions: {
     initBoard() {
@@ -24,8 +25,6 @@ export const useAppStore = defineStore("app", {
           };
         }
       }
-
-      this.fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     },
     fen(notation: string) {
       const segments = notation.split(" ");
@@ -72,11 +71,25 @@ export const useAppStore = defineStore("app", {
       };
     },
     selectPiece(row: number, col: number) {
-      if (this.selectedSquare[0] === row && this.selectedSquare[1] === col) {
-        this.selectedSquare = [];
+      if (this.selectedSquare && this.selectedSquare[0] === row && this.selectedSquare[1] === col) {
+        this.selectedSquare = null;
         return;
       }
       this.selectedSquare = [row, col];
+    },
+    setPosition(notation: string) {
+      for (const row of this.board) for (const sq of row) sq.piece = null;
+      this.fen(notation);
+    },
+    syncBoard(board: string[]) {
+      for (let sq = 0; sq < 64; sq++) {
+        if (board[sq] === this.lastBoard[sq]) continue;
+
+        const row = 7 - Math.floor(sq / 8);
+        const col = sq % 8;
+        this.board[row][col].piece = board[sq] === "." ? null : this.getPiece(board[sq]);
+      }
+      this.lastBoard = board;
     },
   },
 });
