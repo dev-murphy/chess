@@ -180,7 +180,7 @@ onMounted(async () => {
 
            <Piece
             v-if="appStore.board[row - 1][col - 1].piece !== null"
-            :piece="appStore.board[row - 1][col - 1].piece"
+            :piece="appStore.board[row - 1][col - 1].piece!"
             :theme="PieceTheme.THEME_1"
             :is-dragging="isDragging"
             @update:is-dragging="
