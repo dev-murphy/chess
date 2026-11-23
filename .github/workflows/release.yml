@@ -9,9 +9,14 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Version and Release
+  version:
+    name: Bump Version
     runs-on: ubuntu-latest
+
+    outputs:
+      bumped: ${{ steps.bump.outputs.bumped }}
+      version: ${{ steps.bump.outputs.version }}
+      tag: ${{ steps.bump.outputs.tag }}
 
     # Avoid double commiting release commit
     if: "!startsWith(github.event.head_commit.message, 'bump:')"
@@ -60,15 +65,44 @@ jobs:
         if: steps.bump.outputs.bumped == 'true'
         run: git push origin HEAD:main --follow-tags
 
-      - name: Create Github Release
-        if: steps.bump.outputs.bumped == 'true'
+  build:
+    name: Build Executables
+    needs: version
+    if: needs.version.outputs.bumped == 'true'
+    uses: ./.github/workflows/build.yml
+    with:
+      tag: ${{ needs.version.outputs.tag }}
+
+  release:
+    name: Create GitHub Release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - name: Download executables
+        uses: actions/download-artifact@v7
+        with:
+          pattern: executable-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create release with executables
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          awk -v v="${{ steps.bump.outputs.version }}" '
+          awk -v v="${{ needs.version.outputs.version }}" '
             /^## / { if (found) exit; if (index($0, "[" v "]")) { found=1; next } }
             found
           ' CHANGELOG.md > release-notes.md
-          gh release create "${{ steps.bump.outputs.tag }}" \
-            --title "${{ steps.bump.outputs.tag }}" \
-            --notes-file release-notes.md
+
+          ls -l release-assets
+          gh release create "${{ needs.version.outputs.tag }}" \
+            --title "${{ needs.version.outputs.tag }}" \
+            --notes-file release-notes.md \
+            release-assets/*
+

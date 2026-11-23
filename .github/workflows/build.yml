@@ -1,0 +1,150 @@
+name: Build Executables
+
+on:
+  # Called by release.yml; the executables are uploaded as workflow artifacts
+  # and release.yml attaches them when it creates the GitHub Release
+  workflow_call:
+    inputs:
+      tag:
+        description: "Tag to build from"
+        required: true
+        type: string
+
+  # Manual run: builds for every OS and keeps the files as run artifacts
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build from (leave empty for the selected branch)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  APP_NAME: Chess
+
+jobs:
+  build:
+    name: Build (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-x64
+          - os: macos-latest
+            label: macos-arm64
+          - os: macos-15-intel
+            label: macos-x64
+          - os: ubuntu-latest
+            label: linux-x64
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      # ---------- Frontend (Vite) ----------
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ui/pnpm-lock.yaml
+
+      - name: Build UI
+        working-directory: ui
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      # ---------- Python ----------
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install Python dependencies
+        run: uv sync --frozen --no-dev
+
+      # pywebview has no pip-installable GTK backend, so Linux builds use Qt
+      - name: Install Linux system libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon-x11-0 libxcb-cursor0 \
+            libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libnss3 libasound2t64
+
+      - name: Freeze with PyInstaller
+        run: |
+          extra=()
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            extra=(--with "pywebview[qt]")
+          fi
+
+          # --windowed: no console window (and a .app bundle on macOS)
+          # --onefile is skipped on macOS, where a .app bundle is the norm
+          mode=(--onefile)
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            mode=(--onedir)
+          fi
+
+          uv run --no-dev --with pyinstaller --with pillow "${extra[@]}" \
+            pyinstaller src/__init__.py \
+              --name "$APP_NAME" \
+              --windowed \
+              "${mode[@]}" \
+              --noconfirm \
+              --clean \
+              --paths src \
+              --icon ui/src/assets/logo.png \
+              --add-data "ui/dist:ui/dist" \
+              --add-data "ui/src/assets/logo.png:ui/src/assets"
+
+      - name: Package
+        id: package
+        run: |
+          version="${{ inputs.tag }}"
+          version="${version:-$(git describe --tags --always)}"
+          out="$APP_NAME-$version-${{ matrix.label }}"
+
+          case "$RUNNER_OS" in
+            Windows)
+              mv "dist/$APP_NAME.exe" "$out.exe"
+              file="$out.exe"
+              ;;
+            macOS)
+              ditto -c -k --keepParent "dist/$APP_NAME.app" "$out.zip"
+              file="$out.zip"
+              ;;
+            Linux)
+              chmod +x "dist/$APP_NAME"
+              tar -czf "$out.tar.gz" -C dist "$APP_NAME"
+              file="$out.tar.gz"
+              ;;
+          esac
+
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: executable-${{ matrix.label }}
+          path: ${{ steps.package.outputs.file }}
+          if-no-files-found: error
