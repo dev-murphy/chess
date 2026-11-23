@@ -1,9 +1,25 @@
+from collections import Counter
+
 from .bitboard import Bitboard, SQ, RANK_2, RANK_7, FILE_A, FILE_H
 from .move_generator import CASTLING_RIGHTS_MASK, KNIGHT_ATTACKS, KING_ATTACKS, MoveGenerator
 from .move import Move
 
 PIECE_MAPS =["PNBRQK","pnbrqk"]
 PROMOTION_PIECES = "nbrq"
+
+# Squares where (rank + file) is even, i.e. a1, c1, ... (the dark squares)
+DARK_SQUARES = sum(1 << sq for sq in range(64) if (sq // 8 + sq % 8) % 2 == 0)
+
+# Game status values returned by `get_game_status`
+ACTIVE = "active"
+CHECKMATE = "checkmate"
+STALEMATE = "stalemate"
+DRAW = "draw"
+
+# Reasons for a draw (other than stalemate)
+INSUFFICIENT_MATERIAL = "insufficient_material"
+THREEFOLD_REPETITION = "threefold_repetition"
+FIFTY_MOVE_RULE = "fifty_move_rule"
 
 class ChessBoard:
     def __init__(self):
@@ -41,6 +57,11 @@ class ChessBoard:
 
         # Move log
         self.move_log = []
+
+        # Draw tracking: half-moves since the last capture or pawn move
+        # and how many times each position has occurred
+        self.halfmove_clock = 0
+        self.position_history: Counter = Counter()
 
         # Reset to starting position
         self.reset_to_starting_position()
@@ -86,6 +107,9 @@ class ChessBoard:
         self.pieces["K"] = 1 << SQ["E1"]
 
         self.update_occupancies()
+
+        self.halfmove_clock = 0
+        self.position_history = Counter({self.position_key(): 1})
         
     def update_occupancies(self):
         self.white_occupied = 0
@@ -208,7 +232,13 @@ class ChessBoard:
 
         self.castling_rights &= CASTLING_RIGHTS_MASK[from_square]
         self.castling_rights &= CASTLING_RIGHTS_MASK[to_square]
-        
+
+        # Fifty-move rule: any pawn move or capture resets the clock
+        if piece_type == 0 or enemy_piece is not None:
+            self.halfmove_clock = 0
+        else:
+            self.halfmove_clock += 1
+
         self.move_log.append(Move(from_square, to_square, own_piece, enemy_piece))
         self.update_occupancies()
         
@@ -266,10 +296,13 @@ class ChessBoard:
 
     def make_move(self, from_square: int, to_square: int, promotion_type: int):
         """ Execute move if valid and toggle turn. Return True on success. """
+        if self.is_game_over():
+            return False
         if not self.is_valid_move(from_square, to_square):
             return False
         self.force_move(from_square, to_square, promotion_type)
         self.side_to_move = "black" if self.side_to_move == "white" else "white"
+        self.position_history[self.position_key()] += 1
         return True
     
     def get_legal_moves(self, color: int) -> dict[str, list[list[int]]]:
@@ -311,7 +344,98 @@ class ChessBoard:
         """ Return True if the current color is not in check and no legal moves. """
         current_color = 0 if self.side_to_move == "white" else 1
         return not self.is_in_check(current_color) and not bool(self.get_legal_moves(current_color))
-            
+
+    """ DRAW RULES """
+
+    def _can_capture_en_passant(self) -> bool:
+        """ True if the side to move has a legal en passant capture available """
+        if self.en_passant_sq is None:
+            return False
+
+        ep = self.en_passant_sq
+        white_to_move = self.side_to_move == "white"
+        pawns = self.pieces["P"] if white_to_move else self.pieces["p"]
+
+        # Squares a capturing pawn could stand on (left and right of the target file)
+        candidates = []
+        if ep % 8 != 0:
+            candidates.append(ep - 9 if white_to_move else ep + 7)
+        if ep % 8 != 7:
+            candidates.append(ep - 7 if white_to_move else ep + 9)
+
+        return any(
+            0 <= sq < 64 and pawns & (1 << sq) and self.is_valid_move(sq, ep)
+            for sq in candidates
+        )
+
+    def position_key(self) -> tuple:
+        """
+        Identify a position for threefold repetition: piece placement, side to move,
+        castling rights and en passant (only if a capture is actually possible).
+        """
+        ep = self.en_passant_sq if self._can_capture_en_passant() else None
+        return (self.to_fen_board(), self.side_to_move, self.castling_rights, ep)
+
+    def is_threefold_repetition(self) -> bool:
+        """ Return True if the current position has occurred at least three times """
+        return self.position_history[self.position_key()] >= 3
+
+    def is_fifty_move_rule(self) -> bool:
+        """ Return True if 50 moves by each side passed without a capture or pawn move """
+        return self.halfmove_clock >= 100
+
+    def is_insufficient_material(self) -> bool:
+        """
+        Return True if neither side can possibly checkmate:
+          - King vs King
+          - King + Bishop vs King, King + Knight vs King
+          - Kings and bishops only, with every bishop on the same square color
+        """
+        white, black = self.white_pieces(), self.black_pieces()
+
+        # Any pawn, rook or queen means mate is still possible
+        if any(side[t] for side in (white, black) for t in (0, 3, 4)):
+            return False
+
+        knights = white[1] | black[1]
+        bishops = white[2] | black[2]
+        minor_count = knights.bit_count() + bishops.bit_count()
+
+        # K vs K, or a single minor piece on the board
+        if minor_count <= 1:
+            return True
+
+        # Only bishops left, all on the same color squares
+        if knights == 0:
+            return bishops & DARK_SQUARES == 0 or bishops & ~DARK_SQUARES == 0
+
+        return False
+
+    def get_game_status(self) -> tuple[str, str | None]:
+        """
+        Return (status, draw_reason).
+        status is one of: active, checkmate, stalemate, draw.
+        draw_reason is set only when status is draw.
+        """
+        current_color = 0 if self.side_to_move == "white" else 1
+
+        if not self.get_legal_moves(current_color):
+            return (CHECKMATE, None) if self.is_in_check(current_color) else (STALEMATE, None)
+
+        if self.is_insufficient_material():
+            return DRAW, INSUFFICIENT_MATERIAL
+
+        if self.is_threefold_repetition():
+            return DRAW, THREEFOLD_REPETITION
+
+        if self.is_fifty_move_rule():
+            return DRAW, FIFTY_MOVE_RULE
+
+        return ACTIVE, None
+
+    def is_game_over(self) -> bool:
+        return self.get_game_status()[0] != ACTIVE
+
     def to_fen_board(self):
         rows = []
         for rank in range(7, -1, -1):

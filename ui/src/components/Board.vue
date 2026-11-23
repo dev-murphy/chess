@@ -123,6 +123,19 @@ function selectPiece(row: number, col: number) {
   }
 } 
 
+// End of game: checkmate, stalemate or draw
+const isGameOver = computed(
+  () => gameState.value !== null && gameState.value.status !== "active",
+);
+
+async function newGame() {
+  if (!api) return;
+  gameState.value = await api.reset_game();
+  appStore.selectedSquare = null;
+  highlightedSquare.value = [];
+  appStore.syncBoard(gameState.value.board);
+}
+
 async function drawBoard(api: PywebviewChessApi | null) {
   if (!api) return;
   gameState.value = await api.to_json();
@@ -137,7 +150,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="relative">
+    <GameOver v-if="isGameOver && gameState" :state="gameState" @new-game="newGame" />
     <div ref="boardRef" :class="{'cursor-grabbing': isDragging}">
       <div
         v-for="row in appStore.board.length"

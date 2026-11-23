@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Board: typeof import('./../components/Board.vue')['default']
+    GameOver: typeof import('./../components/GameOver.vue')['default']
     Piece: typeof import('./../components/Piece.vue')['default']
     PlayerIndicator: typeof import('./../components/PlayerIndicator.vue')['default']
   }
