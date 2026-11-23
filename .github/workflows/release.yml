@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
- contents: write
+  contents: write
 
 jobs:
   release:
@@ -38,8 +38,11 @@ jobs:
       - name: Bump version and generate changelog
         id: bump
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"  
+
           old_sha=$(git rev-parse HEAD)  
-          cz bump --yes --changelog
+          cz --no-raise 21 bump --yes
 
           if [ "$(git rev-parse HEAD)" == "$old_sha" ]; then 
             echo "bumped=false" >> "$GITHUB_OUTPUT"
@@ -58,7 +61,7 @@ jobs:
         run: git push origin HEAD:main --follow-tags
 
       - name: Create Github Release
-        if: steps.bump.outputs.bump == 'true'
+        if: steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
