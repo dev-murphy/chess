@@ -36,7 +36,32 @@ jobs:
         uses: commitizen-tools/setup-cz@main
 
       - name: Bump version and generate changelog
-        run: cz bump --yes --changelog
+        id: bump
+        run: |
+          old_sha=$(git rev-parse HEAD)  
+          cz bump --yes --changelog
+
+          if [ "$(git rev-parse HEAD)" == "$old_sha" ]; then 
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          VERSION=$(cz version -p)
+          TAG=$(cz version -p --tag)
+
+          echo "bumped=true" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Push version and tags
+        if: steps.bump.outputs.bumped == 'true'
         run: git push origin HEAD:main --follow-tags
+
+      - name: Create Github Release
+        if: steps.bump.outputs.bump == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.bump.outputs.tag }}" \
+            --title "${{ steps.bump.outputs.tag }}" \
+            --generate-notes
