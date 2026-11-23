@@ -110,6 +110,7 @@ class ChessBoard:
         return (None, None)
 
     """ MOVE VALIDATION CHECKS """
+
     def is_square_attacked(self, sq: int, attacker_color: int) -> bool:
         """ Checks if square is being attacked by enemy piece """
         attacker_pieces = self.white_pieces() if attacker_color == 0 else self.black_pieces()
@@ -300,7 +301,7 @@ class ChessBoard:
                     legal_moves[f"{from_r},{from_c}"] = valid_targets
 
         return legal_moves
-    
+
     def is_checkmate(self) -> bool:
         """ Return True if the current color is in check and has no legal moves. """
         current_color = 0 if self.side_to_move == "white" else 1
@@ -310,7 +311,33 @@ class ChessBoard:
         """ Return True if the current color is not in check and no legal moves. """
         current_color = 0 if self.side_to_move == "white" else 1
         return not self.is_in_check(current_color) and not bool(self.get_legal_moves(current_color))
-        
+            
+    def to_fen_board(self):
+        rows = []
+        for rank in range(7, -1, -1):
+            row, empty = "", 0
+            for file in range(8):
+                color, piece_type = self.get_piece_at(rank * 8 + file)
+                if color is None or piece_type is None:
+                    empty += 1
+                    continue
+                if empty:
+                    row += str(empty)
+                    empty = 0
+                row += PIECE_MAPS[color][piece_type]
+            if empty: 
+                row += str(empty)
+            rows.append(row)
+        return "/".join(rows)
+
+    def to_board_array(self):
+        board_arr = ["."] * 64
+        for sq in range(64):
+            color, piece_type = self.get_piece_at(sq)
+            if piece_type is not None and color is not None:
+                board_arr[sq] = PIECE_MAPS[color][piece_type]
+        return board_arr
+    
     def display(self):
         """ Prints the complete chess board with unicode character """
         symbols = {
