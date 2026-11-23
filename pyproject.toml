@@ -29,6 +29,7 @@ annotated_tag = true
 update_changelog_on_bump = true
 changelog_file = "CHANGELOG.md"
 changelog_incremental = true
+breaking_change_exclamation_in_title = true
 pre_bump_hooks = [
     "uv lock",
     "git add uv.lock",
