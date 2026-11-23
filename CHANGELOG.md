@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.1](https://github.com/dev-murphy/yaadchess/compare/v1.0.0...v1.0.1) (2026-11-23)
+
+### Bug Fixes
+
+* fix typo, add Github bot user info and remove redundancies ([4d9b7d7](https://github.com/dev-murphy/yaadchess/commit/4d9b7d7e3bd7d232b77546850e4a2c33ae96ed1a))
+
+## [1.0.0](https://github.com/dev-murphy/yaadchess/releases/tag/v1.0.0) (2026-11-23)
+
+### Features
+
+* complete basic game UI and functionality ([5e460b0](https://github.com/dev-murphy/yaadchess/commit/5e460b012db0dd07115fea2276a85164e8723398))
+
+### Code Refactors
+
+* update api make_move function to return valid_move and state of the game ([8560c2f](https://github.com/dev-murphy/yaadchess/commit/8560c2fc915fc214e296ba8d9d92531ea0929d00))
+
+### Miscellaneous
+
+* fix FEN function, update setPosition function and add sync board function ([845ee7b](https://github.com/dev-murphy/yaadchess/commit/845ee7b932c17ba9ca44f6181a1ac92433adefc7))
+* match the return types for API functions ([14824e4](https://github.com/dev-murphy/yaadchess/commit/14824e4c60ab0a10d82340677589a1bf3b7ce49d))
+* add function to get board position from mouse coords and engine coords from board coords ([dcf1420](https://github.com/dev-murphy/yaadchess/commit/dcf142033a007218f055bc06bbe46c1e1b8ce156))
+* add auto-import for composables ([d52540d](https://github.com/dev-murphy/yaadchess/commit/d52540de583c255bfc56b9cc53006580b294179f))
+* create basic util to create fen notation and board grid representation ([399bc03](https://github.com/dev-murphy/yaadchess/commit/399bc035e0fba924040f2de7f05cb368b7ed0d89))
+
+### Continuous Integration
+
+* allow for breaking chages using exclamation signs ([de7033b](https://github.com/dev-murphy/yaadchess/commit/de7033ba1b657b4112bcb35c1aa04934705e65ca))
+* create Github release based on the tags made ([e41d3da](https://github.com/dev-murphy/yaadchess/commit/e41d3daadecdd149489873b9cb8632a5e53f8ae4))
+
+
 ## [1.0.0](https://github.com/dev-murphy/yaadchess/compare/v0.11.1...v1.0.0) (2026-11-23)
 
 ### Features
