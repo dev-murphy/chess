@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import { PieceTheme, type Piece, type Coords } from "~/types";
-import { compareSquares } from "~/utils";
+import type { ChessGameState, PywebviewChessApi } from "~/types/api";
+import { compareSquares, boardCoordsFrom, moveCoordsFrom } from "~/utils";
+
 import moveAudioFile from "~/assets/audio/piece-move.mp3";
-import captureAudioFile from "~/assets/audio/piece-capture.mp3"
+import captureAudioFile from "~/assets/audio/piece-capture.mp3";
 
 const appStore = useAppStore();
+const gameState = ref<ChessGameState | null>(null);
+let api: PywebviewChessApi | null = null;
 
 // audio files
 const moveSound = new Audio(moveAudioFile);
@@ -12,16 +16,16 @@ const captureSound = new Audio(captureAudioFile);
 
 function playMoveSound() {
   moveSound.currentTime = 0;
-  moveSound.play().catch(error => {
-    console.error('Playback failed: ', error);
-  })
+  moveSound.play().catch((error) => {
+    console.error("Playback failed: ", error);
+  });
 }
 
 function playCaptureSound() {
   captureSound.currentTime = 0;
-  captureSound.play().catch(error => {
-    console.error('Playback failed: ', error);
-  })
+  captureSound.play().catch((error) => {
+    console.error("Playback failed: ", error);
+  });
 }
 
 // Dragging controls for pieces
@@ -32,37 +36,56 @@ const isDragging = ref<Piece | null>(null);
 const boardRef = useTemplateRef("boardRef");
 const { top, left } = useElementBounding(boardRef);
 
-function getCoordsFromPosition(pos: Coords) {
-  let x = Math.floor((pos.x - left.value) / 72);
-  let y = Math.floor((pos.y - top.value) / 72);
-  return { r: y, c: x };
-}
+// Draw on locally board for must captures
+function updateBoardUI(position: Coords) {
+  const { selectedSquare, board } = appStore;
 
-function handleDrop(pos: Coords) {
-  const { r, c } = getCoordsFromPosition(pos);
-  let row = appStore.selectedSquare[0];
-  let col = appStore.selectedSquare[1];
+  if (selectedSquare === null) return {};
+  const { r, c } = boardCoordsFrom(position, top.value, left.value);
+  let row = selectedSquare[0];
+  let col = selectedSquare[1];
 
-  if (row == undefined || col === undefined) return;
-  if (r < 0 || r > 7 || c < 0 || c > 7) return;
-  if (r === row - 1 && c === col - 1) return;
+  if ((r === row - 1 && c === col - 1) || !moveExists([7 - r, c])) return {};
 
-  if (appStore.board[r][c].piece !== null) {
-    playCaptureSound();
-  } else {
-    playMoveSound();
+  const hasPiece = board[r][c].piece !== null;
+  const isCapture = hasPiece || (board[row-1][col-1].piece?.type === "pawn" && c !== col - 1)
+  board[r][c].piece = board[row - 1][col - 1].piece;
+  board[row - 1][col - 1].piece = null;
+
+  if (isCapture) playCaptureSound();
+  else playMoveSound();
+
+  appStore.selectedSquare = null;
+  highlightedSquare.value = [];
+  if (gameState.value) {
+    gameState.value.legal_moves = {};
   }
 
-  appStore.board[r][c].piece = appStore.board[row - 1][col - 1].piece;
-  appStore.board[row - 1][col - 1].piece = null;
-  appStore.selectedSquare = [];
+  return {
+    toCoords: [r, c],
+    fromCoords: [row-1, col-1]
+  }
 }
 
-function handleMouseDown(event: MouseEvent) {
-  const { r, c } = getCoordsFromPosition({
+async function handleDrop(pos: Coords) {
+  const { toCoords, fromCoords } = updateBoardUI(pos);
+  if (!toCoords || !fromCoords) return;
+
+  let to_sq = moveCoordsFrom(toCoords[0],toCoords[1]);
+  let from_sq = moveCoordsFrom(fromCoords[0], fromCoords[1]);
+
+  let newState = await api?.make_move(from_sq, to_sq, 3);
+  if (newState && newState.valid_move) {
+    gameState.value = newState.state;
+    appStore.syncBoard(gameState.value.board);
+  }
+}
+
+function handleMouseOver(event: MouseEvent) {
+  const { r, c } = boardCoordsFrom({
     x: event.clientX,
     y: event.clientY,
-  });
+  }, top.value, left.value);
   hoveredSquare.value = [r, c];
 }
 
@@ -73,14 +96,49 @@ function getTextColor(row: number, col: number) {
     : appStore.lightColor;
 }
 
-onMounted(() => {
+// board things
+const highlightedSquare = ref<number[][]>([]);
+function getMoveSquares(row: number, col: number) {
+  if (!gameState.value) return;
+  let key = `${8 - row},${col - 1}`;
+  highlightedSquare.value = gameState.value.legal_moves[key];
+}
+
+function moveExists(coords: number[]) {
+  if (!highlightedSquare.value) return false; 
+
+  return highlightedSquare.value.some(
+    (square) =>
+      coords.length === square.length &&
+      square.every((val, index) => coords[index] == val),
+  );
+}
+
+function selectPiece(row: number, col: number) {
+  appStore.selectPiece(row, col);
+  if (appStore.selectedSquare) {
+    getMoveSquares(row, col);
+  } else {
+    highlightedSquare.value = [];
+  }
+} 
+
+async function drawBoard(api: PywebviewChessApi | null) {
+  if (!api) return;
+  gameState.value = await api.to_json();
+  appStore.syncBoard(gameState.value.board)
+}
+
+onMounted(async () => {
   appStore.initBoard();
+  api = await usePywebviewApi();
+  await drawBoard(api)
 });
 </script>
 
 <template>
   <div>
-    <div ref="boardRef">
+    <div ref="boardRef" :class="{'cursor-grabbing': isDragging}">
       <div
         v-for="row in appStore.board.length"
         :key="`row-${row}`"
@@ -93,16 +151,18 @@ onMounted(() => {
             'relative w-18 h-18',
             {
               selected:
-                compareSquares(appStore.selectedSquare, [row, col]),
-              'ring-6 ring-inset ring-white/90':
-                hoveredSquare !== null && isDragging !== null &&
-                compareSquares(hoveredSquare, [row-1, col-1])
+                appStore.selectedSquare && compareSquares(appStore.selectedSquare, [row, col]) ||
+                moveExists([8 - row, col - 1]),
+              hovered:
+                hoveredSquare &&
+                isDragging &&
+                compareSquares(hoveredSquare, [row - 1, col - 1]),
             },
           ]"
           :style="{
             backgroundColor: appStore.board[row - 1][col - 1].color,
           }"
-          @mouseover="handleMouseDown"
+          @mouseover="handleMouseOver"
         >
           <span
             v-if="col === 1"
@@ -118,23 +178,24 @@ onMounted(() => {
             >{{ "abcdefgh".charAt(col - 1) }}</span
           >
 
-          <Piece
+           <Piece
             v-if="appStore.board[row - 1][col - 1].piece !== null"
             :piece="appStore.board[row - 1][col - 1].piece"
             :theme="PieceTheme.THEME_1"
             :is-dragging="isDragging"
-            @mousedown="appStore.selectPiece(row, col)"
             @update:is-dragging="
               (val) => {
                 isDragging = val;
+                if (val) {
+                  selectPiece(row, col)
+                }
               }
             "
             @handle-drop="handleDrop"
-          />
+          /> 
         </div>
       </div>
     </div>
-    Sound Effect by <a href="https://pixabay.com/users/freesound_community-46691455/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=60890">freesound_community</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=60890">Pixabay</a>
   </div>
 </template>
 
@@ -143,6 +204,11 @@ onMounted(() => {
 
 .selected::before {
   content: "";
-  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-yellow-200/75;
+  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-yellow-500/20;
+}
+
+.hovered::after {
+  content: "";
+  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full ring-6 ring-inset ring-white/75;
 }
 </style>
