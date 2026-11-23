@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.1.0](https://github.com/dev-murphy/yaadchess/compare/v1.0.1...v1.1.0) (2026-11-23)
+
+### Features
+
+* implement PlayerIndicator component ([4dc008f](https://github.com/dev-murphy/yaadchess/commit/4dc008f5ad2da7c5884cd756194481a5b5a06a09))
+
+### Code Refactors
+
+* update how version is accessed and remove extra spaces ([8d51201](https://github.com/dev-murphy/yaadchess/commit/8d512015339c0169973d6a3e1306f3b70b6603c7))
+
+### Miscellaneous
+
+* add side_to_move to chess engine api response ([fd1185a](https://github.com/dev-murphy/yaadchess/commit/fd1185a8069213bbc86642b13c742520efb060b2))
+
+### Continuous Integration
+
+* add changelog change to Github release ([1b1299d](https://github.com/dev-murphy/yaadchess/commit/1b1299dc8761c3f028777d8e1fa94a979545f6b3))
+
+### Styles
+
+* add fonts and favicon to the UI project ([b1ca2c3](https://github.com/dev-murphy/yaadchess/commit/b1ca2c3d09e61e947740f033d07f4388ee8c3c61))
+
+## [1.0.1](https://github.com/dev-murphy/yaadchess/releases/tag/v1.0.1) (2026-11-23)
+
+### Bug Fixes
+
+* fix typo, add Github bot user info and remove redundancies ([4d9b7d7](https://github.com/dev-murphy/yaadchess/commit/4d9b7d7e3bd7d232b77546850e4a2c33ae96ed1a))
+
+
 ## [1.0.1](https://github.com/dev-murphy/yaadchess/compare/v1.0.0...v1.0.1) (2026-11-23)
 
 ### Bug Fixes
