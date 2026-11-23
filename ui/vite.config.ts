@@ -18,7 +18,7 @@ export default defineConfig({
     AutoImport({
       imports: ["vue", "@vueuse/core"],
       dts: "src/types/auto-imports.d.ts",
-      dirs: ["src/stores"],
+      dirs: ["src/stores", "src/composables"],
     }),
     Components({
       extensions: ["vue"],
