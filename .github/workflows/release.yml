@@ -65,7 +65,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cz changelog "${{ steps.bump.outputs.version }}" --dry-run > release-notes.md
+          awk -v v="${{ steps.bump.outputs.version }}" '
+            /^## / { if (found) exit; if (index($0, "[" v "]")) { found=1; next } }
+            found
+          ' CHANGELOG.md > release-notes.md
           gh release create "${{ steps.bump.outputs.tag }}" \
             --title "${{ steps.bump.outputs.tag }}" \
             --notes-file release-notes.md
