@@ -43,4 +43,5 @@ class ChessAPI:
             "legal_moves": self.board.get_legal_moves(color),
             "last_move": last_move,
             "board": self.board.to_board_array(),
+            "side_to_move": self.board.side_to_move
         }

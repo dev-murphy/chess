@@ -10,6 +10,7 @@ export interface ChessGameState {
   in_check: boolean;
   captured: boolean;
   board: string[];
+  side_to_move: string;
   legal_moves: Record<string, Coord[]>;
   captured_pieces: {
     white: PieceSymbol[],
