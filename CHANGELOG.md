@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.0.0](https://github.com/dev-murphy/yaadchess/compare/v0.11.1...v1.0.0) (2026-11-23)
+
+### Features
+
+* complete basic game UI and functionality ([5e460b0](https://github.com/dev-murphy/yaadchess/commit/5e460b012db0dd07115fea2276a85164e8723398))
+
+### Code Refactors
+
+* update api make_move function to return valid_move and state of the game ([8560c2f](https://github.com/dev-murphy/yaadchess/commit/8560c2fc915fc214e296ba8d9d92531ea0929d00))
+
+### Miscellaneous
+
+* fix FEN function, update setPosition function and add sync board function ([845ee7b](https://github.com/dev-murphy/yaadchess/commit/845ee7b932c17ba9ca44f6181a1ac92433adefc7))
+* match the return types for API functions ([14824e4](https://github.com/dev-murphy/yaadchess/commit/14824e4c60ab0a10d82340677589a1bf3b7ce49d))
+* add function to get board position from mouse coords and engine coords from board coords ([dcf1420](https://github.com/dev-murphy/yaadchess/commit/dcf142033a007218f055bc06bbe46c1e1b8ce156))
+* add auto-import for composables ([d52540d](https://github.com/dev-murphy/yaadchess/commit/d52540de583c255bfc56b9cc53006580b294179f))
+* create basic util to create fen notation and board grid representation ([399bc03](https://github.com/dev-murphy/yaadchess/commit/399bc035e0fba924040f2de7f05cb368b7ed0d89))
+
+### Continuous Integration
+
+* allow for breaking chages using exclamation signs ([de7033b](https://github.com/dev-murphy/yaadchess/commit/de7033ba1b657b4112bcb35c1aa04934705e65ca))
+* create Github release based on the tags made ([e41d3da](https://github.com/dev-murphy/yaadchess/commit/e41d3daadecdd149489873b9cb8632a5e53f8ae4))
+
+## [0.11.1](https://github.com/dev-murphy/yaadchess/releases/tag/v0.11.1) (2026-11-21)
+
+### Bug Fixes
+
+* remove `$` typo error ([1bb9e65](https://github.com/dev-murphy/yaadchess/commit/1bb9e65b479b72a96b8384baffd74b127cd9ab0a))
+* reset other variables for special moves, side_to_move and move_log ([27ba16d](https://github.com/dev-murphy/yaadchess/commit/27ba16df8aa19d5cb91f758fe778abb1c09a56c8))
+* add promotion type to make_move function in api class ([17c50fb](https://github.com/dev-murphy/yaadchess/commit/17c50fb38e5aaaf98a00614f1c130cc9a7a5f4d8))
+* add en passant param in pseudo-legal moves and add get_king_moves functions ([af34261](https://github.com/dev-murphy/yaadchess/commit/af34261a8a8073ac160d74f2d12181c1fa6e11d1))
+
+### Miscellaneous
+
+* implement all special moves and mark it as done ([83921c7](https://github.com/dev-murphy/yaadchess/commit/83921c76b687001275d568121bff16b5d131b119))
+* add variables for special moves like castling, en passant and promotion ([f6cafd4](https://github.com/dev-murphy/yaadchess/commit/f6cafd416cb78ca8c370b83ea99ac24bbed683c3))
+* add castling rights and moves when getting king moves ([fa729d7](https://github.com/dev-murphy/yaadchess/commit/fa729d7823d017f1a765e9df6d819d748bd0aacb))
+* add en passant params and check to get_pawn_attacks function ([9fccdca](https://github.com/dev-murphy/yaadchess/commit/9fccdcada5a5f4be9f53ef09e021f408ee956dee))
+
+
 ## [0.11.1](https://github.com/dev-murphy/yaadchess/compare/v0.11.0...v0.11.1) (2026-11-21)
 
 ### Bug Fixes
