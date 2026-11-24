@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.2.1](https://github.com/dev-murphy/yaadchess/compare/v1.2.0...v1.2.1) (2026-11-24)
+
+### Bug Fixes
+
+* **build:** make packaged executables start and load the UI ([9c04c08](https://github.com/dev-murphy/yaadchess/commit/9c04c082a7e7c2183036f5747b8f14151e3b9b5e))
+
+## [1.2.0](https://github.com/dev-murphy/yaadchess/releases/tag/v1.2.0) (2026-11-23)
+
+### Features
+
+* end the game on checkmate, stalemate or draw ([aa706d6](https://github.com/dev-murphy/yaadchess/commit/aa706d67b3f86d378f18fefb99dabb05b59b1916))
+
+### Bug Fixes
+
+* **ui:** assert non-null piece in Board template ([d1c8ca5](https://github.com/dev-murphy/yaadchess/commit/d1c8ca5a24331211f2aa77110e8917a353343dd5))
+
+### Continuous Integration
+
+* build executables and attach them to GitHub releases ([88b5e3f](https://github.com/dev-murphy/yaadchess/commit/88b5e3ff22f1f2cf4323f5cbfc394acd58248ed9))
+* extract release notes from CHANGELOG.md ([4836da7](https://github.com/dev-murphy/yaadchess/commit/4836da7c4551d9783f2c4e646fd4d026dc77538d))
+
+
 ## [1.2.0](https://github.com/dev-murphy/yaadchess/compare/v1.1.0...v1.2.0) (2026-11-23)
 
 ### Features
