@@ -30,8 +30,10 @@ def main():
     if mode == "--prod" and not PROD_URL.exists():
         raise FileNotFoundError(f"Production frontend not found: {PROD_URL}")
 
-    # PROD_URL is a Path, I need to convert it to a string
-    url = DEV_URL if mode == "--dev" else PROD_URL.as_uri()
+    # Pass production files as a plain path (not a file:// URI) so pywebview
+    # serves them over its built-in HTTP server. WebView2 (Windows) and
+    # QtWebEngine (Linux) refuse to load Vite's module scripts from file://
+    url = DEV_URL if mode == "--dev" else str(PROD_URL)
     webview.create_window(
         title="Chess", 
         url=url, 

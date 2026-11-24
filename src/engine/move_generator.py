@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from .bitboard import FILE_A, FILE_B, FILE_G, FILE_H, RANK_2, RANK_7, SQ
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.engine import ChessBoard
+    from . import ChessBoard
 
 """ Generate moves for a knight and a king on every position on the board """
 KNIGHT_ATTACKS = [0] * 64
