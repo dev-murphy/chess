@@ -29,16 +29,14 @@ jobs:
           fetch-tags: true
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Setup Python project
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
+      # setup-cz runs its own actions/setup-python, so the version goes here
       - name: Install Commitizen
         uses: commitizen-tools/setup-cz@main
+        with:
+          python-version: "3.12"
 
       - name: Bump version and generate changelog
         id: bump
